@@ -52,22 +52,24 @@ header p {
 .game-card a {
   display: inline-block;
   text-decoration: none;
-  color: #fff;                 /* لون الكتابة أبيض */
-  background: #00ffcc;         /* لون الزر */
-  padding: 15px 30px;          /* مساحة داخلية للزر */
-  border-radius: 17%;          /* انحناء الزوايا 17% */
+  color: #fff;                 /* لون الكتابة */
+  background: linear-gradient(145deg, #1e90ff, #00bfff); /* تدرج أزرق جذاب */
+  padding: 15px 40px;          /* حجم الزر */
+  border-radius: 17%;          /* الزوايا المنحنية */
   font-weight: bold;
-  font-size: 16px;
-  border: 2px solid #00ffcc;  /* حدود للزر */
-  box-shadow: 0 5px 10px rgba(0,0,0,0.3); /* ظل خفيف */
-  transition: all 0.3s ease;   /* حركة سلسة عند hover */
+  font-size: 18px;
+  border: none;                /* بدون حدود */
+  box-shadow: 0 6px 12px rgba(0,0,0,0.4); /* ظل يعطي عمق */
+  cursor: pointer;
+  transition: all 0.3s ease;   /* حركة سلسة */
+  text-transform: uppercase;   /* يخلي الكتابة كلها كبيرة */
 }
 
 /* حركة الكرت لما تمرر الماوس عليه */
 
 .game-card a:hover {
-  background: #00d1a6;         /* تغيير لون عند المرور */
-  transform: translateY(-3px); /* حركة بسيطة للأعلى */
-  box-shadow: 0 8px 15px rgba(0,0,0,0.4); /* ظل أقوى */
+  transform: translateY(-4px) scale(1.05);  /* حركة عند المرور */
+  box-shadow: 0 10px 20px rgba(0,0,0,0.5); /* زيادة الظل */
+  background: linear-gradient(145deg, #00bfff, #1e90ff); /* تغيير بسيط للتدرج */
 }
 
