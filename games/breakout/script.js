@@ -4,6 +4,8 @@ const scoreEl = document.getElementById("score");
 const restartBtn = document.getElementById("restartBtn");
 const startBtn = document.getElementById("startBtn");
 const backBtn = document.getElementById("backBtn");
+const leftBtn = document.getElementById("leftBtn");
+const rightBtn = document.getElementById("rightBtn");
 const hitSound = document.getElementById("hitSound");
 const loseSound = document.getElementById("loseSound");
 
@@ -11,16 +13,17 @@ let gameStarted = false;
 
 // الكرة
 let x = canvas.width/2, y = canvas.height-30;
-let dx = 2, dy = -2;
+let dx = 3, dy = -3;
 const ballRadius = 10;
 
 // المجداف
-const paddleHeight = 10, paddleWidth = 75;
+const paddleHeight = 12, paddleWidth = 100;
 let paddleX = (canvas.width - paddleWidth)/2;
 
 // الطوبات
-const brickRowCount = 5, brickColumnCount = 7;
-const brickWidth = 50, brickHeight = 15;
+const brickRowCount = 6;  // زودنا الصفوف
+const brickColumnCount = 9; // زودنا الأعمدة
+const brickWidth = 55, brickHeight = 15;
 const brickPadding = 10, brickOffsetTop = 30, brickOffsetLeft = 30;
 let bricks = [];
 for(let c=0;c<brickColumnCount;c++){
@@ -33,6 +36,7 @@ for(let c=0;c<brickColumnCount;c++){
 let rightPressed=false, leftPressed=false;
 let score=0;
 
+// تحكم بالكيبورد
 document.addEventListener("keydown", e=>{
   if(e.key=="Right"||e.key=="ArrowRight") rightPressed=true;
   if(e.key=="Left"||e.key=="ArrowLeft") leftPressed=true;
@@ -41,6 +45,12 @@ document.addEventListener("keyup", e=>{
   if(e.key=="Right"||e.key=="ArrowRight") rightPressed=false;
   if(e.key=="Left"||e.key=="ArrowLeft") leftPressed=false;
 });
+
+// تحكم بالموبايل
+leftBtn.addEventListener("touchstart", ()=>{leftPressed=true;});
+leftBtn.addEventListener("touchend", ()=>{leftPressed=false;});
+rightBtn.addEventListener("touchstart", ()=>{rightPressed=true;});
+rightBtn.addEventListener("touchend", ()=>{rightPressed=false;});
 
 function drawBall(){
   ctx.beginPath();
@@ -92,7 +102,6 @@ function collisionDetection(){
   }
 }
 
-// إعادة تشغيل اللعبة
 function restartGame(){
   document.location.reload();
 }
@@ -103,12 +112,11 @@ startBtn.addEventListener("click", ()=>{
   startBtn.style.display="none";
 });
 
-// زر Back للعودة للصفحة الرئيسية
+// زر Back
 backBtn.addEventListener("click", ()=>{
-  window.location.href = "../../index.html"; // تأكد إن الرابط للواجهة الرئيسية صح
+  window.location.href = "../../index.html"; // رابط الصفحة الرئيسية
 });
 
-// اللعبة نفسها
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   drawBricks();
@@ -130,8 +138,8 @@ function draw(){
     }
 
     // تحريك المجداف
-    if(rightPressed && paddleX<canvas.width-paddleWidth) paddleX+=5;
-    if(leftPressed && paddleX>0) paddleX-=5;
+    if(rightPressed && paddleX<canvas.width-paddleWidth) paddleX+=6;
+    if(leftPressed && paddleX>0) paddleX-=6;
 
     // تحريك الكرة
     x+=dx; y+=dy;
@@ -141,4 +149,3 @@ function draw(){
 }
 
 draw();
-
