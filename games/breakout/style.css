@@ -1,1 +1,17 @@
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: linear-gradient(135deg, #1a0000, #800000, #000000);
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+.game-container {
+  border: 3px solid #fff;
+  border-radius: 15px;
+  padding: 10px;
+  background: rgba(0,0,0,0.8);
+}
 
