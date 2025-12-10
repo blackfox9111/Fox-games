@@ -50,12 +50,12 @@ header p {
 /* ================================== */
 /* كل كرت لعبة (نافذة اللعبة) */
 .game-card {
-  background: rgba(0,0,0,0.7); /* خلفية واضحة */
+  background: rgba(0,0,0,0.8); /* أسود شفاف */
   border-radius: 15px;
   padding: 20px;
   text-align: center;
   transition: 0.3s;
-  backdrop-filter: blur(5px); /* تأثير طفيف كأنه زجاج */
+  backdrop-filter: blur(5px); /* تأثير زجاج خفيف */
 }
 
 .game-card:hover {
@@ -70,19 +70,19 @@ header p {
   text-decoration: none;
   color: #fff;                 
   background: linear-gradient(145deg, #1e90ff, #00bfff); 
-  padding: 10px 25px;          /* حجم أصغر للزر */
+  padding: 8px 20px;           /* صغّره شويه */
   border-radius: 17%;          
   font-weight: bold;
-  font-size: 16px;             
+  font-size: 14px;             /* صغّر الخط */
   border: none;                
-  box-shadow: 0 4px 8px rgba(0,0,0,0.4); 
+  box-shadow: 0 3px 6px rgba(0,0,0,0.4); /* ظل أخف */
   cursor: pointer;
   transition: all 0.3s ease;   
   text-transform: uppercase;   
 }
 
 .game-card a:hover {
-  transform: translateY(-3px) scale(1.05);  
-  box-shadow: 0 8px 15px rgba(0,0,0,0.5); 
+  transform: translateY(-2px) scale(1.05);  
+  box-shadow: 0 6px 12px rgba(0,0,0,0.5); 
   background: linear-gradient(145deg, #00bfff, #1e90ff); 
 }
