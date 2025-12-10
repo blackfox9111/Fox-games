@@ -2,8 +2,12 @@ const canvas = document.getElementById("breakoutCanvas");
 const ctx = canvas.getContext("2d");
 const scoreEl = document.getElementById("score");
 const restartBtn = document.getElementById("restartBtn");
+const startBtn = document.getElementById("startBtn");
+const backBtn = document.getElementById("backBtn");
 const hitSound = document.getElementById("hitSound");
 const loseSound = document.getElementById("loseSound");
+
+let gameStarted = false;
 
 // الكرة
 let x = canvas.width/2, y = canvas.height-30;
@@ -38,7 +42,6 @@ document.addEventListener("keyup", e=>{
   if(e.key=="Left"||e.key=="ArrowLeft") leftPressed=false;
 });
 
-// رسم الكرة
 function drawBall(){
   ctx.beginPath();
   ctx.arc(x,y,ballRadius,0,Math.PI*2);
@@ -47,7 +50,6 @@ function drawBall(){
   ctx.closePath();
 }
 
-// رسم المجداف
 function drawPaddle(){
   ctx.beginPath();
   ctx.rect(paddleX, canvas.height-paddleHeight, paddleWidth, paddleHeight);
@@ -56,7 +58,6 @@ function drawPaddle(){
   ctx.closePath();
 }
 
-// رسم الطوبات مع تأثير خفيف عند الاصطدام
 function drawBricks(){
   for(let c=0;c<brickColumnCount;c++){
     for(let r=0;r<brickRowCount;r++){
@@ -74,7 +75,6 @@ function drawBricks(){
   }
 }
 
-// تحقق التصادم مع الطوبات
 function collisionDetection(){
   for(let c=0;c<brickColumnCount;c++){
     for(let r=0;r<brickRowCount;r++){
@@ -97,7 +97,16 @@ function restartGame(){
   document.location.reload();
 }
 
-restartBtn.addEventListener("click", restartGame);
+// زر Start
+startBtn.addEventListener("click", ()=>{
+  gameStarted=true;
+  startBtn.style.display="none";
+});
+
+// زر Back للعودة للصفحة الرئيسية
+backBtn.addEventListener("click", ()=>{
+  window.location.href = "../../index.html"; // تأكد إن الرابط للواجهة الرئيسية صح
+});
 
 // اللعبة نفسها
 function draw(){
@@ -107,29 +116,29 @@ function draw(){
   drawPaddle();
   collisionDetection();
 
-  // الاصطدام بالحواف
-  if(x+dx>canvas.width-ballRadius||x+dx<ballRadius) dx=-dx;
-  if(y+dy<ballRadius) dy=-dy;
-  else if(y+dy>canvas.height-ballRadius){
-    if(x>paddleX && x<paddleX+paddleWidth) dy=-dy;
-    else {
-      loseSound.play();
-      restartBtn.style.display="block";
-      return; // توقف اللعبة
+  if(gameStarted){
+    // الاصطدام بالحواف
+    if(x+dx>canvas.width-ballRadius||x+dx<ballRadius) dx=-dx;
+    if(y+dy<ballRadius) dy=-dy;
+    else if(y+dy>canvas.height-ballRadius){
+      if(x>paddleX && x<paddleX+paddleWidth) dy=-dy;
+      else {
+        loseSound.play();
+        restartBtn.style.display="block";
+        gameStarted=false;
+      }
     }
+
+    // تحريك المجداف
+    if(rightPressed && paddleX<canvas.width-paddleWidth) paddleX+=5;
+    if(leftPressed && paddleX>0) paddleX-=5;
+
+    // تحريك الكرة
+    x+=dx; y+=dy;
   }
 
-  // تحريك المجداف
-  if(rightPressed && paddleX<canvas.width-paddleWidth) paddleX+=5;
-  if(leftPressed && paddleX>0) paddleX-=5;
-
-  // تحريك الكرة
-  x+=dx; y+=dy;
   requestAnimationFrame(draw);
 }
-
-draw();
-
 
 draw();
 
