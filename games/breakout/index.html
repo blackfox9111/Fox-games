@@ -1,16 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Breakout</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Breakout Game</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="game-container">
     <canvas id="breakoutCanvas" width="480" height="320"></canvas>
+    <div id="score">Score: 0</div>
+    <button id="restartBtn" style="display:none;">Restart</button>
   </div>
+  <audio id="hitSound" src="hit.wav"></audio>
+  <audio id="loseSound" src="lose.wav"></audio>
   <script src="script.js"></script>
 </body>
 </html>
-
