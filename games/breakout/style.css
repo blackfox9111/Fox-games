@@ -6,42 +6,46 @@ body {
   background: linear-gradient(135deg, #1a0000, #800000, #000000);
   margin: 0;
   font-family: Arial, sans-serif;
+  color: #fff;
 }
 
 .game-container {
   position: relative;
   border: 3px solid #fff;
   border-radius: 15px;
-  padding: 10px;
+  padding: 15px;
   background: rgba(0,0,0,0.8);
   text-align: center;
 }
 
-#breakoutCanvas {
+canvas {
   display: block;
-  margin: auto;
+  margin: 10px auto;
   background: rgba(0,0,0,0.5);
 }
 
-#score {
-  color: #fff;
-  font-size: 18px;
+.buttons {
   margin-top: 10px;
 }
 
-#restartBtn {
-  margin-top: 10px;
+button {
   padding: 8px 20px;
-  font-size: 16px;
+  font-size: 14px;
   border-radius: 10px;
   border: none;
   background: linear-gradient(145deg, #1e90ff, #00bfff);
   color: #fff;
   cursor: pointer;
   transition: all 0.3s ease;
+  margin: 0 5px;
 }
 
-#restartBtn:hover {
+button:hover {
   background: linear-gradient(145deg, #00bfff, #1e90ff);
   transform: scale(1.05);
+}
+
+#score {
+  margin-top: 10px;
+  font-size: 18px;
 }
