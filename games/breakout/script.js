@@ -4,6 +4,8 @@ const scoreEl = document.getElementById("score");
 const restartBtn = document.getElementById("restartBtn");
 const startBtn = document.getElementById("startBtn");
 const backBtn = document.getElementById("backBtn");
+const leftBtn = document.getElementById("leftBtn");
+const rightBtn = document.getElementById("rightBtn");
 const hitSound = document.getElementById("hitSound");
 const loseSound = document.getElementById("loseSound");
 
@@ -18,15 +20,14 @@ const paddleHeight = 12, paddleWidth = 100;
 let paddleX;
 
 // الطوبات
-const brickRowCount = 6;  // الصفوف
-const brickColumnCount = 11; // زودنا الأعمدة لتملأ كل المساحة
+const brickRowCount = 6;
+const brickColumnCount = 11;
 const brickWidth = 50, brickHeight = 15;
 const brickPadding = 8, brickOffsetTop = 30, brickOffsetLeft = 20;
 let bricks = [];
 
 // التحكم
 let rightPressed=false, leftPressed=false;
-let score=0;
 
 // ----------------- إعداد اللعبة -----------------
 function initGame(){
@@ -34,10 +35,11 @@ function initGame(){
   y = canvas.height-30;
   dx = 3; dy = -3;
   paddleX = (canvas.width - paddleWidth)/2;
-  score = 0;
   scoreEl.textContent = "Score: 0";
   restartBtn.style.display = "none";
+  gameStarted=false;
 
+  // إعداد الطوبات
   bricks = [];
   for(let c=0;c<brickColumnCount;c++){
     bricks[c]=[];
@@ -47,7 +49,7 @@ function initGame(){
   }
 }
 
-// ----------------- أحداث التحكم -----------------
+// ----------------- أحداث التحكم بالكيبورد -----------------
 document.addEventListener("keydown", e=>{
   if(e.key=="d"||e.key=="D") rightPressed=true;
   if(e.key=="a"||e.key=="A") leftPressed=true;
@@ -56,6 +58,17 @@ document.addEventListener("keyup", e=>{
   if(e.key=="d"||e.key=="D") rightPressed=false;
   if(e.key=="a"||e.key=="A") leftPressed=false;
 });
+
+// ----------------- التحكم بالموبايل -----------------
+leftBtn.addEventListener("mousedown", ()=>{leftPressed=true;});
+leftBtn.addEventListener("mouseup", ()=>{leftPressed=false;});
+leftBtn.addEventListener("touchstart", ()=>{leftPressed=true;});
+leftBtn.addEventListener("touchend", ()=>{leftPressed=false;});
+
+rightBtn.addEventListener("mousedown", ()=>{rightPressed=true;});
+rightBtn.addEventListener("mouseup", ()=>{rightPressed=false;});
+rightBtn.addEventListener("touchstart", ()=>{rightPressed=true;});
+rightBtn.addEventListener("touchend", ()=>{rightPressed=false;});
 
 // ----------------- زر Start -----------------
 startBtn.addEventListener("click", ()=>{
@@ -71,10 +84,10 @@ restartBtn.addEventListener("click", ()=>{
 
 // ----------------- زر Back -----------------
 backBtn.addEventListener("click", ()=>{
-  window.location.href = "../../index.html"; // رابط الصفحة الرئيسية
+  window.location.href = "../../index.html";
 });
 
-// ----------------- رسم العناصر -----------------
+// ----------------- رسم اللعبة -----------------
 function drawBall(){
   ctx.beginPath();
   ctx.arc(x,y,ballRadius,0,Math.PI*2);
@@ -116,8 +129,7 @@ function collisionDetection(){
         if(x>b.x && x<b.x+brickWidth && y>b.y && y<b.y+brickHeight){
           dy=-dy;
           b.status=0;
-          score++;
-          scoreEl.textContent="Score: "+score;
+          scoreEl.textContent = "Score: "+(++score);
           hitSound.play();
         }
       }
@@ -125,7 +137,6 @@ function collisionDetection(){
   }
 }
 
-// ----------------- اللعبة -----------------
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   drawBricks();
@@ -134,11 +145,15 @@ function draw(){
   collisionDetection();
 
   if(gameStarted){
+    // الكرة تتحرك
+    x += dx;
+    y += dy;
+
     // الاصطدام بالحواف
-    if(x+dx>canvas.width-ballRadius||x+dx<ballRadius) dx=-dx;
-    if(y+dy<ballRadius) dy=-dy;
-    else if(y+dy>canvas.height-ballRadius){
-      if(x>paddleX && x<paddleX+paddleWidth) dy=-dy;
+    if(x + dx > canvas.width-ballRadius || x + dx < ballRadius) dx = -dx;
+    if(y + dy < ballRadius) dy = -dy;
+    else if(y + dy > canvas.height-ballRadius){
+      if(x > paddleX && x < paddleX+paddleWidth) dy = -dy;
       else {
         loseSound.play();
         gameStarted=false;
@@ -147,11 +162,8 @@ function draw(){
     }
 
     // تحريك المجداف
-    if(rightPressed && paddleX<canvas.width-paddleWidth) paddleX+=6;
-    if(leftPressed && paddleX>0) paddleX-=6;
-
-    // تحريك الكرة
-    x+=dx; y+=dy;
+    if(rightPressed && paddleX < canvas.width - paddleWidth) paddleX += 6;
+    if(leftPressed && paddleX > 0) paddleX -= 6;
   }
 
   requestAnimationFrame(draw);
