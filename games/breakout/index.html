@@ -8,12 +8,20 @@
 </head>
 <body>
   <div class="game-container">
+    <h2>Breakout Game</h2>
+    <p>Controls: Arrow Left & Arrow Right to move paddle</p>
     <canvas id="breakoutCanvas" width="480" height="320"></canvas>
     <div id="score">Score: 0</div>
-    <button id="restartBtn" style="display:none;">Restart</button>
+    <div class="buttons">
+      <button id="startBtn">Start</button>
+      <button id="backBtn">Back</button>
+      <button id="restartBtn" style="display:none;">Restart</button>
+    </div>
   </div>
+
   <audio id="hitSound" src="hit.wav"></audio>
   <audio id="loseSound" src="lose.wav"></audio>
+
   <script src="script.js"></script>
 </body>
 </html>
