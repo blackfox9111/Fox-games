@@ -49,18 +49,25 @@ header p {
 
 /* ================================== */
 /* كل كرت لعبة */
-.game-card {
-  background: rgba(0,0,0,0.5);
-  border-radius: 15px;
-  padding: 20px;
-  text-align: center;
-  transition: 0.3s;
+.game-card a {
+  display: inline-block;
+  text-decoration: none;
+  color: #fff;                 /* لون الكتابة أبيض */
+  background: #00ffcc;         /* لون الزر */
+  padding: 15px 30px;          /* مساحة داخلية للزر */
+  border-radius: 17%;          /* انحناء الزوايا 17% */
+  font-weight: bold;
+  font-size: 16px;
+  border: 2px solid #00ffcc;  /* حدود للزر */
+  box-shadow: 0 5px 10px rgba(0,0,0,0.3); /* ظل خفيف */
+  transition: all 0.3s ease;   /* حركة سلسة عند hover */
 }
 
 /* حركة الكرت لما تمرر الماوس عليه */
 
-.game-card:hover {
-  transform: translateY(-8px) scale(1.05);
-  background: rgba(0,0,0,0.7);
+.game-card a:hover {
+  background: #00d1a6;         /* تغيير لون عند المرور */
+  transform: translateY(-3px); /* حركة بسيطة للأعلى */
+  box-shadow: 0 8px 15px rgba(0,0,0,0.4); /* ظل أقوى */
 }
 
