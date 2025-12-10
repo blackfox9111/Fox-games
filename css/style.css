@@ -52,23 +52,23 @@ header p {
 .game-card a {
   display: inline-block;
   text-decoration: none;
-  color: #fff;                 /* لون الكتابة */
-  background: linear-gradient(145deg, #1e90ff, #00bfff); /* تدرج أزرق جذاب */
-  padding: 15px 40px;          /* حجم الزر */
-  border-radius: 17%;          /* الزوايا المنحنية */
+  color: #fff;                 
+  background: linear-gradient(145deg, #1e90ff, #00bfff); 
+  padding: 10px 25px;          /* صغّره شوية */
+  border-radius: 17%;          
   font-weight: bold;
-  font-size: 18px;
-  border: none;                /* بدون حدود */
-  box-shadow: 0 6px 12px rgba(0,0,0,0.4); /* ظل يعطي عمق */
+  font-size: 16px;             /* صغّر الخط شويه */
+  border: none;                
+  box-shadow: 0 4px 8px rgba(0,0,0,0.4); /* ظل أخف */
   cursor: pointer;
-  transition: all 0.3s ease;   /* حركة سلسة */
-  text-transform: uppercase;   /* يخلي الكتابة كلها كبيرة */
+  transition: all 0.3s ease;   
+  text-transform: uppercase;   
 }
 
 /* حركة الكرت لما تمرر الماوس عليه */
 
 .game-card a:hover {
-  transform: translateY(-4px) scale(1.05);  /* حركة عند المرور */
-  box-shadow: 0 10px 20px rgba(0,0,0,0.5); /* زيادة الظل */
-  background: linear-gradient(145deg, #00bfff, #1e90ff); /* تغيير بسيط للتدرج */
+  transform: translateY(-3px) scale(1.05);  
+  box-shadow: 0 8px 15px rgba(0,0,0,0.5); 
+  background: linear-gradient(145deg, #00bfff, #1e90ff); 
 }
