@@ -57,27 +57,17 @@ window.addEventListener("load", ()=>{
   }
 
   // ----------------- التحكم بالكيبورد -----------------
-  document.addEventListener("keydown", e=>{
-    if(e.key === "d" || e.key === "D"){ 
-      rightPressed=true;
-      e.preventDefault();
-    }
-    if(e.key === "a" || e.key === "A"){
-      leftPressed=true;
-      e.preventDefault();
-    }
-  });
+// ----------------- التحكم بالكيبورد (اسهم) -----------------
+document.addEventListener("keydown", e=>{
+  if(e.key === "ArrowRight") rightPressed = true;
+  if(e.key === "ArrowLeft") leftPressed = true;
+});
 
-  document.addEventListener("keyup", e=>{
-    if(e.key === "d" || e.key === "D"){ 
-      rightPressed=false;
-      e.preventDefault();
-    }
-    if(e.key === "a" || e.key === "A"){
-      leftPressed=false;
-      e.preventDefault();
-    }
-  });
+document.addEventListener("keyup", e=>{
+  if(e.key === "ArrowRight") rightPressed = false;
+  if(e.key === "ArrowLeft") leftPressed = false;
+});
+
 
   // ----------------- التحكم بالموبايل -----------------
   const pressLeft = (e)=>{ leftPressed=true; e.preventDefault(); };
