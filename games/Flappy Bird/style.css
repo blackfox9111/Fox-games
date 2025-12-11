@@ -1,7 +1,35 @@
-canvas {
+.flappy-container {
+  position: relative;
+  width: 100%;
+  height: 100vh; /* Fullscreen height */
+  overflow: hidden;
+}
+
+/* الكانڤاس يغطي الشاشة بالكامل */
+#flappyCanvas {
+  width: 100%;
+  height: 100%;
   display: block;
-  margin: 0 auto;
-  width: 100%;       /* يعبي عرض الشاشة بالكامل */
-  max-width: 600px;  /* الحد الأقصى للكمبيوتر */
-  height: auto;      /* يحافظ على نسبة الطول */
+}
+
+/* أزرار Start وRestart تظهر فقط على الموبايل */
+#startBtn, #restartBtn {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 15px 30px;
+  font-size: 18px;
+  z-index: 10;
+  border: none;
+  border-radius: 10px;
+  background: #1e90ff;
+  color: #fff;
+  cursor: pointer;
+}
+
+#startBtn { top: 40%; }
+#restartBtn { top: 50%; display: none; }
+
+@media (min-width: 601px) {
+  #startBtn, #restartBtn { display: none; } /* يختفوا على الكمبيوتر */
 }
