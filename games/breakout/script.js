@@ -123,22 +123,26 @@ document.addEventListener("keyup", e=>{
   }
 
   // ----------------- رسم الطوب -----------------
-  function drawBricks(){
-    for(let c=0;c<brickColumnCount;c++){
-      for(let r=0;r<brickRowCount;r++){
-        let b=bricks[c][r];
-        if(b.status==1){
-          b.x = c*(brickWidth+brickPadding)+brickOffsetLeft;
-          b.y = r*(brickHeight+brickPadding)+brickOffsetTop;
-          ctx.beginPath();
-          ctx.rect(b.x,b.y,brickWidth,brickHeight);
-          ctx.fillStyle="#ff4500";
-          ctx.fill();
-          ctx.closePath();
-        }
+function drawBricks(){
+  for(let c=0;c<brickColumnCount;c++){
+    for(let r=0;r<brickRowCount;r++){
+      let b=bricks[c][r];
+      if(b.status==1){
+        let brickX = c*(brickWidth+brickPadding)+brickOffsetLeft;
+        // لو الطوبة هتطلع برا الكانفس، ما ترسمهاش
+        if(brickX + brickWidth > canvas.width) continue;
+
+        b.x = brickX;
+        b.y = r*(brickHeight+brickPadding)+brickOffsetTop;
+        ctx.beginPath();
+        ctx.rect(b.x,b.y,brickWidth,brickHeight);
+        ctx.fillStyle="#ff4500";
+        ctx.fill();
+        ctx.closePath();
       }
     }
   }
+}
 
   // ----------------- تصادم -----------------
   function collisionDetection(){
