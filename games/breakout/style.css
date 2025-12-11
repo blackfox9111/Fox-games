@@ -31,6 +31,10 @@ canvas {
   margin-top: 10px;
 }
 
+/* ------------------------------- */
+/*   الأزرار العامة                */
+/* ------------------------------- */
+
 button {
   padding: 10px 20px;
   font-size: 16px;
@@ -41,6 +45,7 @@ button {
   cursor: pointer;
   transition: all 0.3s ease;
   margin: 0 5px;
+  user-select: none; /* منع تحديد النص */
 }
 
 button:hover {
@@ -53,11 +58,32 @@ button:hover {
   font-size: 20px;
 }
 
+/* ------------------------------- */
+/*  أزرار التحكم للموبايل         */
+/* ------------------------------- */
+
 .mobile-controls {
   margin-top: 10px;
 }
 
 .mobile-controls button {
-  font-size: 24px;
-  padding: 12px 25px;
+  font-size: 30px;
+  padding: 15px 32px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 2px solid #ffffff33;
+  color: white;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
+
+.mobile-controls button::selection {
+  background: transparent;
+}
+
+.mobile-controls button:active {
+  transform: scale(0.9);
+}
+
