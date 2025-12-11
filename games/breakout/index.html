@@ -1,31 +1,130 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Breakout Game</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة Breakout</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;user-select:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none}body{font-family:Arial,sans-serif;background:linear-gradient(135deg,#1a1a2e 0%,#4a148c 50%,#1565c0 100%);min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px}.game-container{background:#2d2d3a;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.5);padding:30px;max-width:700px;width:100%}.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;color:#fff;flex-wrap:wrap;gap:10px}.score-item{font-size:20px;font-weight:700}.sound-btn{background:#4a4a5a;border:none;color:#fff;padding:10px;border-radius:8px;cursor:pointer;font-size:20px}.sound-btn:hover{background:#5a5a6a}.powerups-display{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;min-height:35px}.powerup-badge{background:#4a4a5a;color:#fff;padding:5px 15px;border-radius:20px;font-size:14px;display:flex;align-items:center;gap:8px}.powerup-time{color:#ffd700}.canvas-wrapper{position:relative;background:#1a1a2e;border-radius:8px;overflow:hidden;margin-bottom:20px}canvas{display:block;width:100%;height:auto}.overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.8);display:flex;justify-content:center;align-items:center;flex-direction:column;color:#fff}.overlay.hidden{display:none}.overlay h2{font-size:48px;margin-bottom:20px}.overlay p{font-size:24px;margin-bottom:10px}.btn{background:#4caf50;color:#fff;border:none;padding:15px 40px;border-radius:8px;font-size:20px;cursor:pointer;margin-top:20px;font-weight:700}.btn:hover{background:#45a049}.btn-reset{background:#2196f3}.btn-reset:hover{background:#1976d2}.controls{display:flex;justify-content:center;gap:20px;margin-bottom:20px}.control-btn{background:#2196f3;color:#fff;border:none;padding:25px 50px;border-radius:8px;font-size:24px;cursor:pointer;user-select:none;touch-action:manipulation}.control-btn:active{background:#0d47a1}.instructions{text-align:center;color:#b0b0b0;margin-top:20px}.instructions p{font-size:14px;margin-bottom:8px}.powerup-legend{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:15px}.legend-item{background:#4a4a5a;padding:8px;border-radius:6px;font-size:12px;text-align:center}
+    </style>
 </head>
 <body>
-  <div class="game-container">
-    <h2>Breakout Game</h2>
-    <p>Controls: arrows on your keyboard to move or use the buttons </p>
-    <canvas id="breakoutCanvas" width="600" height="400"></canvas>
-    <div id="score">Score: 0</div>
-    <div class="buttons">
-      <button id="startBtn">Start</button>
-      <button id="backBtn">Back</button>
-      <button id="restartBtn" style="display:none;">Restart</button>
+    <div class="game-container">
+        <div class="header">
+            <div class="score-item" id="score">Score: 0</div>
+            <div class="score-item" id="lives">Lives: ❤️❤️❤️</div>
+            <div style="display:flex;align-items:center;gap:10px">
+                <div class="score-item" id="highScore">High: 0</div>
+                <button class="sound-btn" id="soundBtn">🔊</button>
+            </div>
+        </div>
+        <div class="powerups-display" id="powerupsDisplay"></div>
+        <div class="canvas-wrapper">
+            <canvas id="gameCanvas" width="600" height="500"></canvas>
+            <div class="overlay" id="readyOverlay">
+                <h2>BREAKOUT</h2>
+                <p>اضغط SPACE أو ابدأ اللعب</p>
+                <button class="btn" id="startBtn">ابدأ اللعب</button>
+            </div>
+            <div class="overlay hidden" id="gameOverOverlay">
+                <h2 style="color:#f44336">GAME OVER</h2>
+                <p>النتيجة: <span id="finalScore">0</span></p>
+                <p style="font-size:18px;color:#b0b0b0">أعلى نتيجة: <span id="finalHighScore">0</span></p>
+                <button class="btn btn-reset" id="resetBtn1">🔄 العب مرة تانية</button>
+            </div>
+            <div class="overlay hidden" id="winOverlay">
+                <h2 style="color:#ffd700">🎉 مبروك! 🎉</h2>
+                <p>كسرت كل الطوب!</p>
+                <p style="font-size:18px;color:#b0b0b0">النتيجة: <span id="winScore">0</span></p>
+                <button class="btn btn-reset" id="resetBtn2">🔄 العب مرة تانية</button>
+            </div>
+        </div>
+        <div class="controls">
+            <button class="control-btn" id="rightBtn">▶</button>
+            <button class="control-btn" id="leftBtn">◀</button>
+        </div>
+        <div class="instructions">
+            <p>استخدم الأسهم أو الأزرار للتحكم في المضرب</p>
+            <div class="powerup-legend">
+                <div class="legend-item">⬌ توسيع</div>
+                <div class="legend-item">⬍ تضييق</div>
+                <div class="legend-item">⚽ كور</div>
+                <div class="legend-item">🐌 بطيء</div>
+                <div class="legend-item">⚡ سريع</div>
+                <div class="legend-item">🔥 نار</div>
+            </div>
+        </div>
     </div>
-    <div class="mobile-controls">
-      <button id="leftBtn">◀</button>
-      <button id="rightBtn">▶</button>
-    </div>
-  </div>
+    <script>
+const W=600,H=500,BR=8,BC=10,BW=54,BH=20,BP=6,BT=50,BL=15;
+const BC_COL=['#FF6B6B','#FF8E53','#FFC93C','#07C4A8','#4ECDC4','#45B7D1','#5F27CD','#B33771'];
+const PU=[
+    {t:'expand',c:'#0f0',e:'⬌',l:'Expand'},
+    {t:'shrink',c:'#f00',e:'⬍',l:'Shrink'},
+    {t:'multiBall',c:'#ff0',e:'⚽',l:'Multi'},
+    {t:'slowBall',c:'#0ff',e:'🐌',l:'Slow'},
+    {t:'fastBall',c:'#f0f',e:'⚡',l:'Fast'},
+    {t:'fireBall',c:'#f60',e:'🔥',l:'Fire'}
+];
+let cv=document.getElementById('gameCanvas'),cx=cv.getContext('2d');
+let st='ready',sc=0,lv=3,hs=0,se=true,ai=null;
+let g={pd:{x:0,y:0,w:100,h:15,s:8,ow:100},bl:{x:0,y:0,dx:0,dy:0,r:8,sp:4,fb:false},bls:[],brs:[],pus:[],aps:[],k:{l:false,r:false}};
 
-  <audio id="hitSound" src="hit.wav"></audio>
-  <audio id="loseSound" src="lose.wav"></audio>
-
-  <script src="script.js"></script>
+function ib(){let b=[];for(let r=0;r<BR;r++)for(let c=0;c<BC;c++)b.push({x:c*(BW+BP)+BL,y:r*(BH+BP)+BT,w:BW,h:BH,co:BC_COL[r],v:true,p:(BR-r)*10});return b}
+function rsb(){g.bl.x=W/2;g.bl.y=H-100;const a=(Math.random()*60-30)*(Math.PI/180);g.bl.dx=g.bl.sp*Math.sin(a);g.bl.dy=-g.bl.sp*Math.cos(a);g.bl.fb=false}
+function ig(){g.pd.x=W/2-g.pd.w/2;g.pd.y=H-40;g.pd.w=g.pd.ow;g.brs=ib();g.bls=[];g.pus=[];g.aps=[];rsb()}
+function ps(t){if(!se)return;const ac=new(window.AudioContext||window.webkitAudioContext)(),o=ac.createOscillator(),gn=ac.createGain();o.connect(gn);gn.connect(ac.destination);
+switch(t){case'paddle':o.frequency.value=200;o.type='square';gn.gain.setValueAtTime(.3,ac.currentTime);gn.gain.exponentialRampToValueAtTime(.01,ac.currentTime+.1);o.start(ac.currentTime);o.stop(ac.currentTime+.1);break;
+case'brick':o.frequency.value=400;o.type='triangle';gn.gain.setValueAtTime(.2,ac.currentTime);gn.gain.exponentialRampToValueAtTime(.01,ac.currentTime+.15);o.start(ac.currentTime);o.stop(ac.currentTime+.15);break;
+case'wall':o.frequency.value=150;o.type='sine';gn.gain.setValueAtTime(.15,ac.currentTime);gn.gain.exponentialRampToValueAtTime(.01,ac.currentTime+.08);o.start(ac.currentTime);o.stop(ac.currentTime+.08);break;
+case'lose':o.frequency.value=100;o.type='sawtooth';gn.gain.setValueAtTime(.3,ac.currentTime);gn.gain.exponentialRampToValueAtTime(.01,ac.currentTime+.5);o.start(ac.currentTime);o.stop(ac.currentTime+.5);break;
+case'win':[0,.1,.2,.3].forEach((ti,i)=>{const os=ac.createOscillator(),ga=ac.createGain();os.connect(ga);ga.connect(ac.destination);os.frequency.value=[523,659,784,1047][i];os.type='sine';ga.gain.setValueAtTime(.2,ac.currentTime+ti);ga.gain.exponentialRampToValueAtTime(.01,ac.currentTime+ti+.3);os.start(ac.currentTime+ti);os.stop(ac.currentTime+ti+.3)});return;
+case'start':o.frequency.value=440;o.type='sine';gn.gain.setValueAtTime(.2,ac.currentTime);gn.gain.exponentialRampToValueAtTime(.01,ac.currentTime+.2);o.start(ac.currentTime);o.stop(ac.currentTime+.2);break}}
+function cp(x,y){if(Math.random()>.19)return;const pt=PU[Math.floor(Math.random()*PU.length)];g.pus.push({x,y,w:30,h:30,s:2,...pt});ps('brick')}
+function ap(pu){const id=Date.now()+Math.random();ps('start');
+switch(pu.t){case'expand':g.pd.w=Math.min(200,g.pd.ow*1.5);break;case'shrink':g.pd.w=Math.max(50,g.pd.ow*.7);break;
+case'multiBall':for(let i=0;i<2;i++){const a=(Math.random()*60-30)*(Math.PI/180);g.bls.push({x:g.bl.x,y:g.bl.y,dx:g.bl.sp*Math.sin(a),dy:-g.bl.sp*Math.cos(a),r:g.bl.r,sp:g.bl.sp})}return;
+case'slowBall':g.bl.sp=2.5;g.bls.forEach(b=>b.sp=2.5);break;case'fastBall':g.bl.sp=6;g.bls.forEach(b=>b.sp=6);break;case'fireBall':g.bl.fb=true;break}
+if(pu.t!=='multiBall'){g.aps.push({t:pu.t,id,et:Date.now()+9000});setTimeout(()=>rp(id,pu.t),9000)}}
+function rp(id,t){g.aps=g.aps.filter(p=>p.id!==id);
+switch(t){case'expand':case'shrink':g.pd.w=g.pd.ow;break;case'slowBall':case'fastBall':g.bl.sp=4;g.bls.forEach(b=>b.sp=4);break;case'fireBall':g.bl.fb=false;break}}
+function cd(){const bl=g.bl;for(let br of g.brs){if(!br.v)continue;if(bl.x+bl.r>br.x&&bl.x-bl.r<br.x+br.w&&bl.y+bl.r>br.y&&bl.y-bl.r<br.y+br.h){if(!bl.fb)bl.dy=-bl.dy;br.v=false;cp(br.x+br.w/2,br.y+br.h/2);sc+=br.p;if(sc>hs)hs=sc;us();const rbc=g.brs.filter(b=>b.v).length;if(rbc===0){ps('win');sw()}if(!bl.fb)break}}
+g.bls.forEach((eb,i)=>{for(let br of g.brs){if(!br.v)continue;if(eb.x+eb.r>br.x&&eb.x-eb.r<br.x+br.w&&eb.y+eb.r>br.y&&eb.y-eb.r<br.y+br.h){eb.dy=-eb.dy;br.v=false;cp(br.x+br.w/2,br.y+br.h/2);sc+=br.p;if(sc>hs)hs=sc;us();break}}})}
+function gl(){const bl=g.bl,pd=g.pd;cx.fillStyle='#1a1a2e';cx.fillRect(0,0,W,H);
+if(g.k.l)pd.x=Math.max(0,pd.x-pd.s);if(g.k.r)pd.x=Math.min(W-pd.w,pd.x+pd.s);
+bl.x+=bl.dx;bl.y+=bl.dy;
+if(bl.x+bl.r>W||bl.x-bl.r<0){bl.dx=-bl.dx;ps('wall')}if(bl.y-bl.r<0){bl.dy=-bl.dy;ps('wall')}
+if(bl.y+bl.r>pd.y&&bl.y-bl.r<pd.y+pd.h&&bl.x>pd.x&&bl.x<pd.x+pd.w){const hp=(bl.x-pd.x)/pd.w,an=(hp-.5)*(Math.PI/3),sp=Math.sqrt(bl.dx*bl.dx+bl.dy*bl.dy);bl.dx=sp*Math.sin(an);bl.dy=-Math.abs(sp*Math.cos(an));ps('paddle')}
+g.bls.forEach((eb,i)=>{if(eb.y+eb.r>pd.y&&eb.y-eb.r<pd.y+pd.h&&eb.x>pd.x&&eb.x<pd.x+pd.w){const hp=(eb.x-pd.x)/pd.w,an=(hp-.5)*(Math.PI/3),sp=Math.sqrt(eb.dx*eb.dx+eb.dy*eb.dy);eb.dx=sp*Math.sin(an);eb.dy=-Math.abs(sp*Math.cos(an));ps('paddle')}
+if(eb.x+eb.r>W||eb.x-eb.r<0)eb.dx=-eb.dx;if(eb.y-eb.r<0)eb.dy=-eb.dy;
+if(eb.y+eb.r>H)g.bls.splice(i,1);else{eb.x+=eb.dx;eb.y+=eb.dy}});
+g.pus.forEach((pu,i)=>{pu.y+=pu.s;if(pu.y+pu.h>pd.y&&pu.y<pd.y+pd.h&&pu.x+pu.w>pd.x&&pu.x<pd.x+pd.w){ap(pu);g.pus.splice(i,1)}if(pu.y>H)g.pus.splice(i,1)});
+if(bl.y+bl.r>H){ps('lose');lv--;ul();if(lv<=0){sg();return}else rsb()}
+cd();g.brs.forEach(br=>{if(br.v){cx.fillStyle=br.co;cx.fillRect(br.x,br.y,br.w,br.h);cx.strokeStyle='#1a1a2e';cx.lineWidth=2;cx.strokeRect(br.x,br.y,br.w,br.h)}});
+cx.fillStyle='#00d4ff';cx.fillRect(pd.x,pd.y,pd.w,pd.h);cx.strokeStyle='#fff';cx.lineWidth=2;cx.strokeRect(pd.x,pd.y,pd.w,pd.h);
+cx.beginPath();cx.arc(bl.x,bl.y,bl.r,0,Math.PI*2);cx.fillStyle=bl.fb?'#f60':'#ff0';cx.fill();cx.strokeStyle='#fff';cx.lineWidth=2;cx.stroke();cx.closePath();
+g.bls.forEach(eb=>{cx.beginPath();cx.arc(eb.x,eb.y,eb.r,0,Math.PI*2);cx.fillStyle='#0f0';cx.fill();cx.strokeStyle='#fff';cx.lineWidth=2;cx.stroke();cx.closePath()});
+g.pus.forEach(pu=>{cx.fillStyle=pu.c;cx.fillRect(pu.x-pu.w/2,pu.y-pu.h/2,pu.w,pu.h);cx.strokeStyle='#fff';cx.lineWidth=2;cx.strokeRect(pu.x-pu.w/2,pu.y-pu.h/2,pu.w,pu.h);cx.font='20px Arial';cx.textAlign='center';cx.textBaseline='middle';cx.fillStyle='#000';cx.fillText(pu.e,pu.x,pu.y)});
+up();if(st==='playing')ai=requestAnimationFrame(gl)}
+function us(){document.getElementById('score').textContent='Score: '+sc;document.getElementById('highScore').textContent='High: '+hs}
+function ul(){document.getElementById('lives').textContent='Lives: '+'❤️'.repeat(Math.max(0,lv))}
+function up(){const d=document.getElementById('powerupsDisplay');d.innerHTML='';g.aps.forEach(pu=>{const pi=PU.find(p=>p.t===pu.t),tl=Math.ceil((pu.et-Date.now())/1000);const b=document.createElement('div');b.className='powerup-badge';b.innerHTML=`<span>${pi?.e}</span><span>${pi?.l}</span><span class="powerup-time">${tl}s</span>`;d.appendChild(b)})}
+function sg(){st='gameover';document.getElementById('finalScore').textContent=sc;document.getElementById('finalHighScore').textContent=hs;document.getElementById('gameOverOverlay').classList.remove('hidden')}
+function sw(){st='won';document.getElementById('winScore').textContent=sc;document.getElementById('winOverlay').classList.remove('hidden')}
+function stg(){ps('start');st='playing';document.getElementById('readyOverlay').classList.add('hidden');gl()}
+function rg(){sc=0;lv=3;st='ready';ig();us();ul();document.getElementById('readyOverlay').classList.remove('hidden');document.getElementById('gameOverOverlay').classList.add('hidden');document.getElementById('winOverlay').classList.add('hidden')}
+ig();us();ul();
+document.getElementById('startBtn').addEventListener('click',stg);
+document.getElementById('resetBtn1').addEventListener('click',rg);
+document.getElementById('resetBtn2').addEventListener('click',rg);
+document.getElementById('soundBtn').addEventListener('click',()=>{se=!se;document.getElementById('soundBtn').textContent=se?'🔊':'🔇'});
+document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')g.k.l=true;if(e.key==='ArrowRight')g.k.r=true;if(e.key===' '&&st==='ready')stg()});
+document.addEventListener('keyup',e=>{if(e.key==='ArrowLeft')g.k.l=false;if(e.key==='ArrowRight')g.k.r=false});
+const lbtn=document.getElementById('leftBtn'),rbtn=document.getElementById('rightBtn');
+lbtn.addEventListener('mousedown',()=>g.k.l=true);lbtn.addEventListener('mouseup',()=>g.k.l=false);lbtn.addEventListener('mouseleave',()=>g.k.l=false);
+lbtn.addEventListener('touchstart',e=>{e.preventDefault();g.k.l=true});lbtn.addEventListener('touchend',()=>g.k.l=false);
+rbtn.addEventListener('mousedown',()=>g.k.r=true);rbtn.addEventListener('mouseup',()=>g.k.r=false);rbtn.addEventListener('mouseleave',()=>g.k.r=false);
+rbtn.addEventListener('touchstart',e=>{e.preventDefault();g.k.r=true});rbtn.addEventListener('touchend',()=>g.k.r=false);
+    </script>
 </body>
 </html>
