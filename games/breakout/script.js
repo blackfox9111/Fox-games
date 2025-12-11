@@ -145,24 +145,35 @@ function drawBricks(){
 }
 
   // ----------------- تصادم -----------------
-  function collisionDetection(){
-    for(let c=0;c<brickColumnCount;c++){
-      for(let r=0;r<brickRowCount;r++){
-        let b=bricks[c][r];
-        if(b.status==1){
-          if(x > b.x && x < b.x+brickWidth && y > b.y && y < b.y+brickHeight){
-
-            dy = -dy;
-
-            b.status=0;
-            score++;
-            scoreEl.textContent = "Score: " + score;
-            hitSound.play();
-          }
+// ----------------- تصادم -----------------
+function collisionDetection(){
+  let allBroken = true; // بنفترض إن كل الطوبات اتكسرت
+  for(let c=0;c<brickColumnCount;c++){
+    for(let r=0;r<brickRowCount;r++){
+      let b=bricks[c][r];
+      if(b.status==1){
+        allBroken = false; // لسه في طوبة موجودة
+        if(x > b.x && x < b.x+brickWidth && y > b.y && y < b.y+brickHeight){
+          dy = -dy;
+          b.status=0;
+          score++;
+          scoreEl.textContent = "Score: " + score;
+          hitSound.play();
         }
       }
     }
   }
+
+  if(allBroken){
+    gameStarted = false;
+    // عرض رسالة على الكانفس
+    ctx.font = "48px Arial";
+    ctx.fillStyle = "#00ff00";
+    ctx.textAlign = "center";
+    ctx.fillText("!You Win!", canvas.width/2, canvas.height/2);
+    restartBtn.style.display = "inline-block";
+  }
+}
 
   // ----------------- الحلقة الرئيسية -----------------
   function draw(){
