@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cross the Road</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        
+        #gameContainer {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        #gameCanvas {
+            display: block;
+            background: #87CEEB;
+        }
+        
+        #menu, #shop, #gameOver {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 10;
+        }
+        
+        h1 {
+            font-size: 48px;
+            margin-bottom: 30px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+            color: #FFD700;
+        }
+        
+        .btn {
+            padding: 15px 40px;
+            margin: 10px;
+            font-size: 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .character-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .character-card {
+            width: 100px;
+            height: 120px;
+            background: rgba(255,255,255,0.1);
+            border: 3px solid #FFD700;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        
+        .character-card:hover {
+            transform: scale(1.1);
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .character-card.selected {
+            border-color: #00FF00;
+            box-shadow: 0 0 20px #00FF00;
+        }
+        
+        .character-card.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .character-emoji {
+            font-size: 50px;
+        }
+        
+        .character-name {
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .character-price {
+            font-size: 12px;
+            color: #FFD700;
+            position: absolute;
+            bottom: 5px;
+        }
+        
+        #hud {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            z-index: 5;
+        }
+        
+        .hud-left {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .hud-right {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .hud-item {
+            background: rgba(0,0,0,0.6);
+            padding: 10px 20px;
+            border-radius: 10px;
+            pointer-events: none;
+        }
+        
+        .hud-btn {
+            background: rgba(102, 126, 234, 0.8);
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            pointer-events: all;
+            transition: all 0.3s;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        .hud-btn:hover {
+            background: rgba(118, 75, 162, 0.9);
+            transform: scale(1.05);
+        }
+        
+        .hud-btn:active {
+            transform: scale(0.95);
+        }
+        
+        #mobileControls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            display: none;
+            z-index: 5;
+        }
+        
+        .joystick-container {
+            width: 150px;
+            height: 150px;
+            position: relative;
+        }
+        
+        .joystick-base {
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            position: absolute;
+            backdrop-filter: blur(10px);
+        }
+        
+        .joystick-stick {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.5);
+            border: 3px solid rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            backdrop-filter: blur(5px);
+            transition: all 0.1s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .joystick-stick.active {
+            background: rgba(255, 255, 255, 0.7);
+        }
+        
+        .control-dpad {
+            width: 200px;
+            height: 200px;
+            position: relative;
+            display: none;
+        }
+        
+        .control-btn {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: rgba(255,255,255,0.3);
+            border: 3px solid rgba(255,255,255,0.6);
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            cursor: pointer;
+            user-select: none;
+            backdrop-filter: blur(10px);
+        }
+        
+        .control-btn:active {
+            background: rgba(255,255,255,0.5);
+            transform: scale(0.95);
+        }
+        
+        .control-btn.up {
+            top: 0;
+            left: 70px;
+        }
+        
+        .control-btn.down {
+            bottom: 0;
+            left: 70px;
+        }
+        
+        .control-btn.left {
+            top: 70px;
+            left: 0;
+        }
+        
+        .control-btn.right {
+            top: 70px;
+            right: 0;
+        }
+        
+        @media (max-width: 768px) {
+            #mobileControls {
+                display: block;
+            }
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="600" height="800"></canvas>
+        
+        <div id="hud">
+            <div class="hud-left">
+                <div class="hud-item">🎯 المستوى: <span id="levelDisplay">1</span></div>
+                <div class="hud-item">💰 <span id="coinDisplay">0</span></div>
+                <div class="hud-item">❤️ <span id="livesDisplay">5</span></div>
+            </div>
+            <div class="hud-right">
+                <div class="hud-btn" onclick="pauseAndOpenShop()">🛒 المتجر</div>
+                <div class="hud-btn" onclick="pauseAndOpenMenu()">🏠 القائمة</div>
+            </div>
+        </div>
+        
+        <div id="mobileControls">
+            <div class="joystick-container" id="joystickContainer">
+                <div class="joystick-base"></div>
+                <div class="joystick-stick" id="joystickStick"></div>
+            </div>
+        </div>
+        
+        <div id="menu">
+            <h1>🚗 Cross the Road 🚗</h1>
+            <button class="btn" onclick="startGame()">ابدأ اللعب</button>
+            <button class="btn" onclick="openShop()">المتجر</button>
+        </div>
+        
+        <div id="shop" class="hidden">
+            <h1>🛒 المتجر</h1>
+            <p style="font-size: 24px; margin-bottom: 20px;">💰 رصيدك: <span id="shopCoins">0</span></p>
+            
+            <div class="character-grid" id="characterGrid"></div>
+            
+            <button class="btn" onclick="closeShopAndResume()">رجوع</button>
+        </div>
+        
+        <div id="gameOver" class="hidden">
+            <h1>💀 انتهت اللعبة!</h1>
+            <p style="font-size: 28px; margin: 20px;">المستوى: <span id="finalLevel">0</span></p>
+            <p style="font-size: 24px; margin: 20px;">العملات: <span id="finalCoins">0</span></p>
+            <button class="btn" onclick="restartGame()">العب مرة أخرى</button>
+            <button class="btn" onclick="backToMenu()">القائمة الرئيسية</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Game sounds (simple beep sounds using Web Audio API)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSound(freq, duration, type = 'sine') {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.value = freq;
+            osc.type = type;
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+        
+        const characters = [
+            { id: 'human', emoji: '🚶', name: 'إنسان', price: 0, owned: true },
+            { id: 'cat', emoji: '🐱', name: 'قطة', price: 200, owned: false },
+            { id: 'dog', emoji: '🐕', name: 'كلب', price: 200, owned: false },
+            { id: 'frog', emoji: '🐸', name: 'ضفدع', price: 300, owned: false },
+            { id: 'fox', emoji: '🦊', name: 'ثعلب', price: 400, owned: false },
+            { id: 'robot', emoji: '🤖', name: 'روبوت', price: 500, owned: false },
+            { id: 'ghost', emoji: '👻', name: 'شبح', price: 1000, owned: false, special: true }
+        ];
+        
+        let gameState = {
+            player: { x: 275, y: 700, size: 40, speed: 50 },
+            selectedCharacter: 'human',
+            lives: 5,
+            level: 1,
+            coins: 0,
+            totalCoins: 0,
+            isPlaying: false,
+            isGhost: false,
+            cars: [],
+            collectibles: [],
+            roadSegments: [],
+            cameraY: 0,
+            keys: {},
+            animationFrame: 0,
+            secretUnlocked: false,
+            movedBackInLevel3: false
+        };
+        
+        const carColors = [
+            { body: '#FF0000', windows: '#8B0000', wheels: '#2C2C2C' },
+            { body: '#0000FF', windows: '#000080', wheels: '#2C2C2C' },
+            { body: '#FFFF00', windows: '#B8860B', wheels: '#2C2C2C' },
+            { body: '#00FF00', windows: '#006400', wheels: '#2C2C2C' },
+            { body: '#FF00FF', windows: '#8B008B', wheels: '#2C2C2C' },
+            { body: '#00FFFF', windows: '#008B8B', wheels: '#2C2C2C' },
+            { body: '#FFA500', windows: '#FF8C00', wheels: '#2C2C2C' },
+            { body: '#800080', windows: '#4B0082', wheels: '#2C2C2C' }
+        ];
+        
+        function drawCar(x, y, direction, colorScheme) {
+            ctx.save();
+            ctx.translate(x, y);
+            
+            if (direction === -1) {
+                ctx.scale(-1, 1);
+            }
+            
+            // Car body
+            ctx.fillStyle = colorScheme.body;
+            ctx.fillRect(-35, -15, 70, 30);
+            ctx.beginPath();
+            ctx.moveTo(-35, -15);
+            ctx.lineTo(-30, -25);
+            ctx.lineTo(20, -25);
+            ctx.lineTo(25, -15);
+            ctx.fill();
+            
+            // Windows
+            ctx.fillStyle = colorScheme.windows;
+            ctx.fillRect(-28, -22, 25, 15);
+            ctx.fillRect(8, -22, 15, 15);
+            
+            // Wheels
+            ctx.fillStyle = colorScheme.wheels;
+            ctx.beginPath();
+            ctx.arc(-20, 15, 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(20, 15, 8, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Headlights
+            ctx.fillStyle = '#FFFF00';
+            ctx.fillRect(32, -8, 3, 6);
+            ctx.fillRect(32, 2, 3, 6);
+            
+            ctx.restore();
+        }
+        
+        function initLevel() {
+            gameState.cars = [];
+            gameState.collectibles = [];
+            gameState.roadSegments = [];
+            gameState.player.y = 700;
+            gameState.cameraY = 0;
+            gameState.movedBackInLevel3 = false;
+            
+            const roadLength = 800 + (gameState.level * 200);
+            const baseSpeed = 2 + (gameState.level * 0.3);
+            const carDensity = Math.max(50, 100 - gameState.level * 3);
+            
+            for (let i = 100; i < roadLength; i += 100) {
+                gameState.roadSegments.push({ y: -i, type: 'road' });
+            }
+            
+            for (let segment of gameState.roadSegments) {
+                if (Math.random() < 0.5) {
+                    const direction = Math.random() > 0.5 ? 1 : -1;
+                    const speed = baseSpeed + Math.random() * 1.5;
+                    const laneY = segment.y + 50;
+                    const minSpacing = 150;
+                    const maxSpacing = 250;
+                    
+                    let currentX = direction === 1 ? 0 : 600;
+                    
+                    while ((direction === 1 && currentX < 600) || (direction === -1 && currentX > 0)) {
+                        gameState.cars.push({
+                            x: currentX,
+                            y: laneY,
+                            speed: speed * direction,
+                            colorScheme: carColors[Math.floor(Math.random() * carColors.length)]
+                        });
+                        
+                        const spacing = minSpacing + Math.random() * (maxSpacing - minSpacing);
+                        currentX += direction === 1 ? spacing : -spacing;
+                    }
+                }
+            }
+            
+            // Add coins
+            for (let segment of gameState.roadSegments) {
+                if (Math.random() < 0.4) {
+                    for (let i = 0; i < 2; i++) {
+                        gameState.collectibles.push({
+                            x: 100 + Math.random() * 400,
+                            y: segment.y + Math.random() * 80,
+                            type: 'coin',
+                            collected: false
+                        });
+                    }
+                }
+            }
+        }
+        
+        function drawPlayer() {
+            const char = characters.find(c => c.id === gameState.selectedCharacter);
+            const emoji = char ? char.emoji : '🚶';
+            
+            ctx.save();
+            
+            if (gameState.isGhost) {
+                ctx.globalAlpha = 0.5;
+            }
+            
+            // Animation effect
+            const bounce = Math.sin(gameState.animationFrame * 0.2) * 2;
+            
+            ctx.font = `${gameState.player.size}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(emoji, gameState.player.x, gameState.player.y + bounce);
+            
+            ctx.restore();
+        }
+        
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Background
+            ctx.fillStyle = '#90EE90';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.save();
+            ctx.translate(0, gameState.cameraY);
+            
+            // Draw roads
+            for (let segment of gameState.roadSegments) {
+                ctx.fillStyle = '#555555';
+                ctx.fillRect(0, segment.y, canvas.width, 100);
+                
+                ctx.strokeStyle = '#FFD700';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([20, 20]);
+                ctx.beginPath();
+                ctx.moveTo(0, segment.y + 50);
+                ctx.lineTo(canvas.width, segment.y + 50);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+            
+            // Draw cars
+            for (let car of gameState.cars) {
+                drawCar(car.x, car.y, Math.sign(car.speed), car.colorScheme);
+            }
+            
+            // Draw collectibles
+            for (let item of gameState.collectibles) {
+                if (!item.collected) {
+                    ctx.font = '30px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    const coinBounce = Math.sin(Date.now() * 0.005) * 3;
+                    ctx.fillText('💰', item.x, item.y + coinBounce);
+                }
+            }
+            
+            // Draw player
+            drawPlayer();
+            
+            ctx.restore();
+        }
+        
+        function update() {
+            if (!gameState.isPlaying) return;
+            
+            gameState.animationFrame++;
+            
+            // Player movement
+            if (gameState.keys['ArrowUp'] || gameState.keys['w']) {
+                gameState.player.y -= 5;
+                gameState.cameraY += 5;
+            }
+            if (gameState.keys['ArrowDown'] || gameState.keys['s']) {
+                if (gameState.player.y < 700) {
+                    gameState.player.y += 5;
+                    gameState.cameraY -= 5;
+                    
+                    // Secret: Moving back in level 3
+                    if (gameState.level === 3 && !gameState.secretUnlocked && !gameState.movedBackInLevel3) {
+                        gameState.movedBackInLevel3 = true;
+                    }
+                }
+            }
+            if (gameState.keys['ArrowLeft'] || gameState.keys['a']) {
+                gameState.player.x = Math.max(20, gameState.player.x - 5);
+            }
+            if (gameState.keys['ArrowRight'] || gameState.keys['d']) {
+                gameState.player.x = Math.min(580, gameState.player.x + 5);
+            }
+            
+            // Check if secret is unlocked
+            if (gameState.level === 3 && gameState.movedBackInLevel3 && !gameState.secretUnlocked && gameState.player.y >= 700) {
+                gameState.secretUnlocked = true;
+                gameState.coins += 1000;
+                gameState.totalCoins += 1000;
+                playSound(1500, 0.5);
+                
+                // Show secret message
+                ctx.save();
+                ctx.font = 'bold 40px Arial';
+                ctx.fillStyle = '#FFD700';
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 3;
+                ctx.textAlign = 'center';
+                ctx.strokeText('🎉 سر مكتشف! +1000 💰', canvas.width / 2, canvas.height / 2);
+                ctx.fillText('🎉 سر مكتشف! +1000 💰', canvas.width / 2, canvas.height / 2);
+                ctx.restore();
+            }
+            
+            // Update cars
+            for (let car of gameState.cars) {
+                car.x += car.speed;
+                if (car.x > 650) car.x = -50;
+                if (car.x < -50) car.x = 650;
+            }
+            
+            // Check collision with cars
+            if (!gameState.isGhost) {
+                for (let car of gameState.cars) {
+                    const dx = gameState.player.x - car.x;
+                    const dy = gameState.player.y - car.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < 40) {
+                        playSound(100, 0.2, 'square');
+                        gameState.lives--;
+                        gameState.player.y = 700;
+                        gameState.cameraY = 0;
+                        
+                        if (gameState.lives <= 0) {
+                            endGame();
+                        }
+                        break;
+                    }
+                }
+            }
+            
+            // Check collectible collection
+            for (let item of gameState.collectibles) {
+                if (!item.collected) {
+                    const dx = gameState.player.x - item.x;
+                    const dy = gameState.player.y - item.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < 30) {
+                        item.collected = true;
+                        gameState.coins += 10;
+                        gameState.totalCoins += 10;
+                        playSound(800, 0.1);
+                    }
+                }
+            }
+            
+            // Check level completion
+            if (gameState.player.y < -800 - (gameState.level * 200)) {
+                playSound(1000, 0.3);
+                gameState.level++;
+                initLevel();
+            }
+            
+            // Update HUD
+            document.getElementById('levelDisplay').textContent = gameState.level;
+            document.getElementById('coinDisplay').textContent = gameState.coins;
+            document.getElementById('livesDisplay').textContent = gameState.lives;
+        }
+        
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+        
+        function startGame() {
+            gameState.lives = 5;
+            gameState.level = 1;
+            gameState.coins = 0;
+            gameState.isPlaying = true;
+            gameState.secretUnlocked = false;
+            gameState.movedBackInLevel3 = false;
+            
+            const char = characters.find(c => c.id === gameState.selectedCharacter);
+            gameState.isGhost = char && char.special;
+            
+            document.getElementById('menu').classList.add('hidden');
+            document.getElementById('hud').classList.remove('hidden');
+            initLevel();
+        }
+        
+        function endGame() {
+            gameState.isPlaying = false;
+            gameState.totalCoins += gameState.coins;
+            document.getElementById('finalLevel').textContent = gameState.level;
+            document.getElementById('finalCoins').textContent = gameState.coins;
+            document.getElementById('gameOver').classList.remove('hidden');
+            document.getElementById('hud').classList.add('hidden');
+        }
+        
+        function restartGame() {
+            document.getElementById('gameOver').classList.add('hidden');
+            startGame();
+        }
+        
+        function backToMenu() {
+            document.getElementById('gameOver').classList.add('hidden');
+            document.getElementById('menu').classList.remove('hidden');
+        }
+        
+        function openShop() {
+            document.getElementById('menu').classList.add('hidden');
+            document.getElementById('shop').classList.remove('hidden');
+            document.getElementById('shopCoins').textContent = gameState.totalCoins;
+            renderShop();
+        }
+        
+        function closeShop() {
+            document.getElementById('shop').classList.add('hidden');
+            if (gameState.isPlaying) {
+                // Resume game
+            } else {
+                document.getElementById('menu').classList.remove('hidden');
+            }
+        }
+        
+        function pauseAndOpenShop() {
+            gameState.isPlaying = false;
+            document.getElementById('hud').classList.add('hidden');
+            document.getElementById('shop').classList.remove('hidden');
+            document.getElementById('shopCoins').textContent = gameState.totalCoins;
+            renderShop();
+        }
+        
+        function pauseAndOpenMenu() {
+            gameState.isPlaying = false;
+            document.getElementById('hud').classList.add('hidden');
+            document.getElementById('menu').classList.remove('hidden');
+        }
+        
+        function closeShopAndResume() {
+            document.getElementById('shop').classList.add('hidden');
+            document.getElementById('hud').classList.remove('hidden');
+            gameState.isPlaying = true;
+        }
+        
+        function renderShop() {
+            const grid = document.getElementById('characterGrid');
+            grid.innerHTML = '';
+            
+            for (let char of characters) {
+                const card = document.createElement('div');
+                card.className = 'character-card';
+                
+                if (char.id === gameState.selectedCharacter) {
+                    card.classList.add('selected');
+                }
+                
+                if (!char.owned) {
+                    card.classList.add('locked');
+                }
+                
+                card.innerHTML = `
+                    <div class="character-emoji">${char.emoji}</div>
+                    <div class="character-name">${char.name}</div>
+                    ${!char.owned ? `<div class="character-price">💰 ${char.price}</div>` : ''}
+                `;
+                
+                card.onclick = () => selectCharacter(char.id);
+                grid.appendChild(card);
+            }
+        }
+        
+        function selectCharacter(id) {
+            const char = characters.find(c => c.id === id);
+            
+            if (char.owned) {
+                gameState.selectedCharacter = id;
+                playSound(600, 0.1);
+                renderShop();
+            } else if (gameState.totalCoins >= char.price) {
+                gameState.totalCoins -= char.price;
+                char.owned = true;
+                gameState.selectedCharacter = id;
+                playSound(1200, 0.2);
+                document.getElementById('shopCoins').textContent = gameState.totalCoins;
+                renderShop();
+            } else {
+                playSound(200, 0.2, 'square');
+            }
+        }
+        
+        // Keyboard controls
+        window.addEventListener('keydown', (e) => {
+            gameState.keys[e.key] = true;
+        });
+        
+        window.addEventListener('keyup', (e) => {
+            gameState.keys[e.key] = false;
+        });
+        
+        // Joystick controls
+        const joystickContainer = document.getElementById('joystickContainer');
+        const joystickStick = document.getElementById('joystickStick');
+        let joystickActive = false;
+        let joystickCenterX = 0;
+        let joystickCenterY = 0;
+        
+        function initJoystick() {
+            const rect = joystickContainer.getBoundingClientRect();
+            joystickCenterX = rect.left + rect.width / 2;
+            joystickCenterY = rect.top + rect.height / 2;
+        }
+        
+        function handleJoystickMove(clientX, clientY) {
+            if (!joystickActive) return;
+            
+            const deltaX = clientX - joystickCenterX;
+            const deltaY = clientY - joystickCenterY;
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            const maxDistance = 45;
+            
+            let finalX = deltaX;
+            let finalY = deltaY;
+            
+            if (distance > maxDistance) {
+                const angle = Math.atan2(deltaY, deltaX);
+                finalX = Math.cos(angle) * maxDistance;
+                finalY = Math.sin(angle) * maxDistance;
+            }
+            
+            joystickStick.style.transform = `translate(calc(-50% + ${finalX}px), calc(-50% + ${finalY}px))`;
+            
+            // Reset all keys
+            gameState.keys = {};
+            
+            // Set keys based on joystick position
+            const threshold = 15;
+            if (Math.abs(finalX) > threshold || Math.abs(finalY) > threshold) {
+                if (finalY < -threshold) gameState.keys['ArrowUp'] = true;
+                if (finalY > threshold) gameState.keys['ArrowDown'] = true;
+                if (finalX < -threshold) gameState.keys['ArrowLeft'] = true;
+                if (finalX > threshold) gameState.keys['ArrowRight'] = true;
+            }
+        }
+        
+        function resetJoystick() {
+            joystickActive = false;
+            joystickStick.classList.remove('active');
+            joystickStick.style.transform = 'translate(-50%, -50%)';
+            gameState.keys = {};
+        }
+        
+        // Touch events for joystick
+        joystickContainer.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            joystickActive = true;
+            joystickStick.classList.add('active');
+            initJoystick();
+            const touch = e.touches[0];
+            handleJoystickMove(touch.clientX, touch.clientY);
+        });
+        
+        joystickContainer.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (joystickActive) {
+                const touch = e.touches[0];
+                handleJoystickMove(touch.clientX, touch.clientY);
+            }
+        });
+        
+        joystickContainer.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            resetJoystick();
+        });
+        
+        // Mouse events for joystick (for testing on desktop)
+        joystickContainer.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            joystickActive = true;
+            joystickStick.classList.add('active');
+            initJoystick();
+            handleJoystickMove(e.clientX, e.clientY);
+        });
+        
+        window.addEventListener('mousemove', (e) => {
+            if (joystickActive) {
+                handleJoystickMove(e.clientX, e.clientY);
+            }
+        });
+        
+        window.addEventListener('mouseup', () => {
+            if (joystickActive) {
+                resetJoystick();
+            }
+        });
+        
+        // Initialize joystick position
+        initJoystick();
+        window.addEventListener('resize', initJoystick);
+        
+        gameLoop();
+    </script>
+</body>
+</html>
