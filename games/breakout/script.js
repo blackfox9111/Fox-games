@@ -18,14 +18,17 @@ window.addEventListener("load", ()=>{
   const ballRadius = 10;
 
   // المجداف
-  const paddleHeight = 12, paddleWidth = 100;
+  const paddleHeight = 12, paddleWidth = 110;
   let paddleX;
 
-  // الطوبات
-  const brickRowCount = 6;
-  const brickColumnCount = 11;
-  const brickWidth = 50, brickHeight = 15;
-  const brickPadding = 8, brickOffsetTop = 30, brickOffsetLeft = 20;
+  // نقاط
+  let score = 0;
+
+  // الطوبات (كبرتهم عشان يملّوا الشاشة)
+  const brickRowCount = 7;
+  const brickColumnCount = 13;
+  const brickWidth = 45, brickHeight = 15;
+  const brickPadding = 8, brickOffsetTop = 30, brickOffsetLeft = 10;
   let bricks = [];
 
   // التحكم
@@ -34,9 +37,12 @@ window.addEventListener("load", ()=>{
   // ----------------- إعداد اللعبة -----------------
   function initGame(){
     x = canvas.width/2;
-    y = canvas.height-30;
-    dx = 3; dy = -3;
+    y = canvas.height-40;
+    dx = 4;
+    dy = -4;
     paddleX = (canvas.width - paddleWidth)/2;
+    score = 0;
+
     scoreEl.textContent = "Score: 0";
     restartBtn.style.display = "none";
     gameStarted=false;
@@ -52,24 +58,31 @@ window.addEventListener("load", ()=>{
 
   // ----------------- التحكم بالكيبورد -----------------
   document.addEventListener("keydown", e=>{
-    if(e.key=="d"||e.key=="D") rightPressed=true;
-    if(e.key=="a"||e.key=="A") leftPressed=true;
+    if(e.key === "d" || e.key === "D") rightPressed=true;
+    if(e.key === "a" || e.key === "A") leftPressed=true;
   });
+
   document.addEventListener("keyup", e=>{
-    if(e.key=="d"||e.key=="D") rightPressed=false;
-    if(e.key=="a"||e.key=="A") leftPressed=false;
+    if(e.key === "d" || e.key === "D") rightPressed=false;
+    if(e.key === "a" || e.key === "A") leftPressed=false;
   });
 
   // ----------------- التحكم بالموبايل -----------------
-  leftBtn.addEventListener("mousedown", ()=>{leftPressed=true;});
-  leftBtn.addEventListener("mouseup", ()=>{leftPressed=false;});
-  leftBtn.addEventListener("touchstart", ()=>{leftPressed=true;});
-  leftBtn.addEventListener("touchend", ()=>{leftPressed=false;});
+  const pressLeft = ()=>{ leftPressed=true; };
+  const releaseLeft = ()=>{ leftPressed=false; };
 
-  rightBtn.addEventListener("mousedown", ()=>{rightPressed=true;});
-  rightBtn.addEventListener("mouseup", ()=>{rightPressed=false;});
-  rightBtn.addEventListener("touchstart", ()=>{rightPressed=true;});
-  rightBtn.addEventListener("touchend", ()=>{rightPressed=false;});
+  const pressRight = ()=>{ rightPressed=true; };
+  const releaseRight = ()=>{ rightPressed=false; };
+
+  leftBtn.addEventListener("touchstart", pressLeft);
+  leftBtn.addEventListener("touchend", releaseLeft);
+  leftBtn.addEventListener("mousedown", pressLeft);
+  leftBtn.addEventListener("mouseup", releaseLeft);
+
+  rightBtn.addEventListener("touchstart", pressRight);
+  rightBtn.addEventListener("touchend", releaseRight);
+  rightBtn.addEventListener("mousedown", pressRight);
+  rightBtn.addEventListener("mouseup", releaseRight);
 
   // ----------------- زر Start -----------------
   startBtn.addEventListener("click", ()=>{
@@ -89,7 +102,7 @@ window.addEventListener("load", ()=>{
     window.location.href = "../../index.html";
   });
 
-  // ----------------- رسم اللعبة -----------------
+  // ----------------- رسم الكرة -----------------
   function drawBall(){
     ctx.beginPath();
     ctx.arc(x,y,ballRadius,0,Math.PI*2);
@@ -98,6 +111,7 @@ window.addEventListener("load", ()=>{
     ctx.closePath();
   }
 
+  // ----------------- رسم المجداف -----------------
   function drawPaddle(){
     ctx.beginPath();
     ctx.rect(paddleX, canvas.height-paddleHeight, paddleWidth, paddleHeight);
@@ -106,6 +120,7 @@ window.addEventListener("load", ()=>{
     ctx.closePath();
   }
 
+  // ----------------- رسم الطوبات -----------------
   function drawBricks(){
     for(let c=0;c<brickColumnCount;c++){
       for(let r=0;r<brickRowCount;r++){
@@ -123,15 +138,20 @@ window.addEventListener("load", ()=>{
     }
   }
 
+  // ----------------- تصادم الكرة مع الطوبات -----------------
   function collisionDetection(){
     for(let c=0;c<brickColumnCount;c++){
       for(let r=0;r<brickRowCount;r++){
         let b=bricks[c][r];
         if(b.status==1){
-          if(x>b.x && x<b.x+brickWidth && y>b.y && y<b.y+brickHeight){
-            dy=-dy;
+          if(x > b.x && x < b.x+brickWidth && y > b.y && y < b.y+brickHeight){
+
+            // فيزيائية مرتدة
+            dy = -dy;
+
             b.status=0;
-            scoreEl.textContent = "Score: "+(++score);
+            score++;
+            scoreEl.textContent = "Score: " + score;
             hitSound.play();
           }
         }
@@ -139,33 +159,52 @@ window.addEventListener("load", ()=>{
     }
   }
 
+  // ----------------- الحلقة الرئيسية -----------------
   function draw(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
+
     drawBricks();
     drawBall();
     drawPaddle();
     collisionDetection();
 
     if(gameStarted){
-      // الكرة تتحرك
+
       x += dx;
       y += dy;
 
-      // الاصطدام بالحواف
-      if(x + dx > canvas.width-ballRadius || x + dx < ballRadius) dx = -dx;
-      if(y + dy < ballRadius) dy = -dy;
+      // الحواف
+      if(x + dx > canvas.width-ballRadius || x + dx < ballRadius){
+        dx = -dx;
+      }
+
+      if(y + dy < ballRadius){
+        dy = -dy;
+      }
       else if(y + dy > canvas.height-ballRadius){
-        if(x > paddleX && x < paddleX+paddleWidth) dy = -dy;
+        // اصطدام بالمنصة (فيزيائي)
+        if(x > paddleX && x < paddleX + paddleWidth){
+
+          let collidePoint = x - (paddleX + paddleWidth / 2);
+          collidePoint /= paddleWidth/2;
+
+          let angle = collidePoint * (Math.PI / 3);
+
+          dx = Math.sin(angle) * 5;
+          dy = -Math.cos(angle) * 5;
+
+          hitSound.play();
+        }
         else {
           loseSound.play();
-          gameStarted=false;
-          restartBtn.style.display="inline-block";
+          gameStarted = false;
+          restartBtn.style.display = "inline-block";
         }
       }
 
-      // تحريك المجداف
-      if(rightPressed && paddleX < canvas.width - paddleWidth) paddleX += 6;
-      if(leftPressed && paddleX > 0) paddleX -= 6;
+      // حركة المنصة
+      if(rightPressed && paddleX < canvas.width - paddleWidth) paddleX += 7;
+      if(leftPressed && paddleX > 0) paddleX -= 7;
     }
 
     requestAnimationFrame(draw);
