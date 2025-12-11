@@ -279,15 +279,65 @@
         #mobileControls {
             position: absolute;
             bottom: 20px;
-            left: 20px;
+            left: 50%;
+            transform: translateX(-50%);
             display: none;
             z-index: 5;
+        }
+        
+        .control-dpad {
+            width: 180px;
+            height: 180px;
+            position: relative;
+        }
+        
+        .control-btn {
+            position: absolute;
+            width: 55px;
+            height: 55px;
+            background: rgba(255,255,255,0.4);
+            border: 3px solid rgba(255,255,255,0.7);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 28px;
+            cursor: pointer;
+            user-select: none;
+            backdrop-filter: blur(10px);
+            transition: all 0.1s;
+        }
+        
+        .control-btn:active {
+            background: rgba(255,255,255,0.7);
+            transform: scale(0.9);
+        }
+        
+        .control-btn.up {
+            top: 0;
+            left: 62.5px;
+        }
+        
+        .control-btn.down {
+            bottom: 0;
+            left: 62.5px;
+        }
+        
+        .control-btn.left {
+            top: 62.5px;
+            left: 0;
+        }
+        
+        .control-btn.right {
+            top: 62.5px;
+            right: 0;
         }
         
         .joystick-container {
             width: 150px;
             height: 150px;
             position: relative;
+            display: none;
         }
         
         .joystick-base {
@@ -319,54 +369,6 @@
             background: rgba(255, 255, 255, 0.7);
         }
         
-        .control-dpad {
-            width: 200px;
-            height: 200px;
-            position: relative;
-            display: none;
-        }
-        
-        .control-btn {
-            position: absolute;
-            width: 60px;
-            height: 60px;
-            background: rgba(255,255,255,0.3);
-            border: 3px solid rgba(255,255,255,0.6);
-            border-radius: 15px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 30px;
-            cursor: pointer;
-            user-select: none;
-            backdrop-filter: blur(10px);
-        }
-        
-        .control-btn:active {
-            background: rgba(255,255,255,0.5);
-            transform: scale(0.95);
-        }
-        
-        .control-btn.up {
-            top: 0;
-            left: 70px;
-        }
-        
-        .control-btn.down {
-            bottom: 0;
-            left: 70px;
-        }
-        
-        .control-btn.left {
-            top: 70px;
-            left: 0;
-        }
-        
-        .control-btn.right {
-            top: 70px;
-            right: 0;
-        }
-        
         @media (max-width: 768px) {
             #mobileControls {
                 display: block;
@@ -395,9 +397,11 @@
         </div>
         
         <div id="mobileControls">
-            <div class="joystick-container" id="joystickContainer">
-                <div class="joystick-base"></div>
-                <div class="joystick-stick" id="joystickStick"></div>
+            <div class="control-dpad">
+                <div class="control-btn up" id="btnUp">⬆️</div>
+                <div class="control-btn down" id="btnDown">⬇️</div>
+                <div class="control-btn left" id="btnLeft">⬅️</div>
+                <div class="control-btn right" id="btnRight">➡️</div>
             </div>
         </div>
         
@@ -653,15 +657,17 @@
             
             gameState.animationFrame++;
             
-            // Player movement
+            // Player movement with slower speed for mobile
+            const moveSpeed = 3;
+            
             if (gameState.keys['ArrowUp'] || gameState.keys['w']) {
-                gameState.player.y -= 5;
-                gameState.cameraY += 5;
+                gameState.player.y -= moveSpeed;
+                gameState.cameraY += moveSpeed;
             }
             if (gameState.keys['ArrowDown'] || gameState.keys['s']) {
                 if (gameState.player.y < 700) {
-                    gameState.player.y += 5;
-                    gameState.cameraY -= 5;
+                    gameState.player.y += moveSpeed;
+                    gameState.cameraY -= moveSpeed;
                     
                     // Secret: Moving back in level 3
                     if (gameState.level === 3 && !gameState.secretUnlocked && !gameState.movedBackInLevel3) {
@@ -670,10 +676,10 @@
                 }
             }
             if (gameState.keys['ArrowLeft'] || gameState.keys['a']) {
-                gameState.player.x = Math.max(20, gameState.player.x - 5);
+                gameState.player.x = Math.max(20, gameState.player.x - moveSpeed);
             }
             if (gameState.keys['ArrowRight'] || gameState.keys['d']) {
-                gameState.player.x = Math.min(580, gameState.player.x + 5);
+                gameState.player.x = Math.min(580, gameState.player.x + moveSpeed);
             }
             
             // Check if secret is unlocked
@@ -884,105 +890,39 @@
             gameState.keys[e.key] = false;
         });
         
-        // Joystick controls
-        const joystickContainer = document.getElementById('joystickContainer');
-        const joystickStick = document.getElementById('joystickStick');
-        let joystickActive = false;
-        let joystickCenterX = 0;
-        let joystickCenterY = 0;
-        
-        function initJoystick() {
-            const rect = joystickContainer.getBoundingClientRect();
-            joystickCenterX = rect.left + rect.width / 2;
-            joystickCenterY = rect.top + rect.height / 2;
+        // Mobile button controls
+        function setupMobileButton(btnId, key) {
+            const btn = document.getElementById(btnId);
+            
+            btn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                gameState.keys[key] = true;
+            });
+            
+            btn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                gameState.keys[key] = false;
+            });
+            
+            btn.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                gameState.keys[key] = true;
+            });
+            
+            btn.addEventListener('mouseup', (e) => {
+                e.preventDefault();
+                gameState.keys[key] = false;
+            });
+            
+            btn.addEventListener('mouseleave', (e) => {
+                gameState.keys[key] = false;
+            });
         }
         
-        function handleJoystickMove(clientX, clientY) {
-            if (!joystickActive) return;
-            
-            const deltaX = clientX - joystickCenterX;
-            const deltaY = clientY - joystickCenterY;
-            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-            const maxDistance = 45;
-            
-            let finalX = deltaX;
-            let finalY = deltaY;
-            
-            if (distance > maxDistance) {
-                const angle = Math.atan2(deltaY, deltaX);
-                finalX = Math.cos(angle) * maxDistance;
-                finalY = Math.sin(angle) * maxDistance;
-            }
-            
-            joystickStick.style.transform = `translate(calc(-50% + ${finalX}px), calc(-50% + ${finalY}px))`;
-            
-            // Reset all keys
-            gameState.keys = {};
-            
-            // Set keys based on joystick position
-            const threshold = 15;
-            if (Math.abs(finalX) > threshold || Math.abs(finalY) > threshold) {
-                if (finalY < -threshold) gameState.keys['ArrowUp'] = true;
-                if (finalY > threshold) gameState.keys['ArrowDown'] = true;
-                if (finalX < -threshold) gameState.keys['ArrowLeft'] = true;
-                if (finalX > threshold) gameState.keys['ArrowRight'] = true;
-            }
-        }
-        
-        function resetJoystick() {
-            joystickActive = false;
-            joystickStick.classList.remove('active');
-            joystickStick.style.transform = 'translate(-50%, -50%)';
-            gameState.keys = {};
-        }
-        
-        // Touch events for joystick
-        joystickContainer.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            joystickActive = true;
-            joystickStick.classList.add('active');
-            initJoystick();
-            const touch = e.touches[0];
-            handleJoystickMove(touch.clientX, touch.clientY);
-        });
-        
-        joystickContainer.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            if (joystickActive) {
-                const touch = e.touches[0];
-                handleJoystickMove(touch.clientX, touch.clientY);
-            }
-        });
-        
-        joystickContainer.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            resetJoystick();
-        });
-        
-        // Mouse events for joystick (for testing on desktop)
-        joystickContainer.addEventListener('mousedown', (e) => {
-            e.preventDefault();
-            joystickActive = true;
-            joystickStick.classList.add('active');
-            initJoystick();
-            handleJoystickMove(e.clientX, e.clientY);
-        });
-        
-        window.addEventListener('mousemove', (e) => {
-            if (joystickActive) {
-                handleJoystickMove(e.clientX, e.clientY);
-            }
-        });
-        
-        window.addEventListener('mouseup', () => {
-            if (joystickActive) {
-                resetJoystick();
-            }
-        });
-        
-        // Initialize joystick position
-        initJoystick();
-        window.addEventListener('resize', initJoystick);
+        setupMobileButton('btnUp', 'ArrowUp');
+        setupMobileButton('btnDown', 'ArrowDown');
+        setupMobileButton('btnLeft', 'ArrowLeft');
+        setupMobileButton('btnRight', 'ArrowRight');
         
         gameLoop();
     </script>
