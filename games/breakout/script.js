@@ -26,7 +26,7 @@ window.addEventListener("load", ()=>{
 
   // الطوب
   const brickRowCount = 7;
-  const brickColumnCount = 13;
+  const brickColumnCount = 11;
   const brickWidth = 45, brickHeight = 15;
   const brickPadding = 8, brickOffsetTop = 30, brickOffsetLeft = 10;
   let bricks = [];
