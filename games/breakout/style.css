@@ -16,6 +16,12 @@ body {
   padding: 15px;
   background: rgba(0,0,0,0.8);
   text-align: center;
+
+  /* منع النسخ والتحديد لكل النصوص جوا اللعبة */
+  user-select: none;       /* للكمبيوتر والموبايل */
+  -webkit-user-select: none; /* لمتصفح كروم وسفاري */
+  -moz-user-select: none;    /* لمتصفح فايرفوكس */
+  -ms-user-select: none;     /* لمتصفح ايدج */
 }
 
 canvas {
