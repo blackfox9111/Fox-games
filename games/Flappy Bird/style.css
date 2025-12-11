@@ -1,0 +1,7 @@
+canvas {
+  display: block;
+  margin: 0 auto;
+  width: 100%;       /* يعبي عرض الشاشة بالكامل */
+  max-width: 600px;  /* الحد الأقصى للكمبيوتر */
+  height: auto;      /* يحافظ على نسبة الطول */
+}
