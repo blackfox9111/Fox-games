@@ -23,6 +23,7 @@
             align-items: center;
             min-height: 100vh;
             overflow: hidden;
+            padding: 10px;
         }
         
         #gameContainer {
@@ -31,11 +32,42 @@
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             overflow: hidden;
             position: relative;
+            max-width: 100%;
+            max-height: 95vh;
         }
         
         #gameCanvas {
             display: block;
             background: #87CEEB;
+            max-width: 100%;
+            max-height: 95vh;
+            width: 600px;
+            height: 800px;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 5px;
+            }
+            
+            #gameContainer {
+                max-height: 100vh;
+                border-radius: 10px;
+            }
+            
+            #gameCanvas {
+                width: 100vw;
+                height: auto;
+                max-width: 450px;
+                max-height: 100vh;
+            }
+        }
+        
+        @media (max-height: 700px) {
+            #gameCanvas {
+                height: 90vh;
+                width: auto;
+            }
         }
         
         #menu, #shop, #gameOver {
@@ -60,6 +92,13 @@
             color: #FFD700;
         }
         
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 32px;
+                margin-bottom: 20px;
+            }
+        }
+        
         .btn {
             padding: 15px 40px;
             margin: 10px;
@@ -72,6 +111,13 @@
             color: white;
             font-weight: bold;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .btn {
+                padding: 12px 30px;
+                font-size: 16px;
+            }
         }
         
         .btn:hover {
@@ -90,6 +136,14 @@
             margin: 20px 0;
         }
         
+        @media (max-width: 768px) {
+            .character-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+                margin: 15px 0;
+            }
+        }
+        
         .character-card {
             width: 100px;
             height: 120px;
@@ -103,6 +157,13 @@
             justify-content: center;
             align-items: center;
             position: relative;
+        }
+        
+        @media (max-width: 768px) {
+            .character-card {
+                width: 80px;
+                height: 100px;
+            }
         }
         
         .character-card:hover {
@@ -151,6 +212,15 @@
             z-index: 5;
         }
         
+        @media (max-width: 768px) {
+            #hud {
+                font-size: 14px;
+                top: 5px;
+                left: 5px;
+                right: 5px;
+            }
+        }
+        
         .hud-left {
             display: flex;
             gap: 10px;
@@ -168,6 +238,13 @@
             pointer-events: none;
         }
         
+        @media (max-width: 768px) {
+            .hud-item {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+        }
+        
         .hud-btn {
             background: rgba(102, 126, 234, 0.8);
             padding: 10px 20px;
@@ -176,6 +253,13 @@
             pointer-events: all;
             transition: all 0.3s;
             border: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .hud-btn {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
         }
         
         .hud-btn:hover {
