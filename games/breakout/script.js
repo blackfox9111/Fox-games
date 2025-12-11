@@ -24,7 +24,7 @@ window.addEventListener("load", ()=>{
   // نقاط
   let score = 0;
 
-  // الطوبات (كبرتهم عشان يملّوا الشاشة)
+  // الطوب
   const brickRowCount = 7;
   const brickColumnCount = 13;
   const brickWidth = 45, brickHeight = 15;
@@ -58,21 +58,33 @@ window.addEventListener("load", ()=>{
 
   // ----------------- التحكم بالكيبورد -----------------
   document.addEventListener("keydown", e=>{
-    if(e.key === "d" || e.key === "D") rightPressed=true;
-    if(e.key === "a" || e.key === "A") leftPressed=true;
+    if(e.key === "d" || e.key === "D"){ 
+      rightPressed=true;
+      e.preventDefault();
+    }
+    if(e.key === "a" || e.key === "A"){
+      leftPressed=true;
+      e.preventDefault();
+    }
   });
 
   document.addEventListener("keyup", e=>{
-    if(e.key === "d" || e.key === "D") rightPressed=false;
-    if(e.key === "a" || e.key === "A") leftPressed=false;
+    if(e.key === "d" || e.key === "D"){ 
+      rightPressed=false;
+      e.preventDefault();
+    }
+    if(e.key === "a" || e.key === "A"){
+      leftPressed=false;
+      e.preventDefault();
+    }
   });
 
   // ----------------- التحكم بالموبايل -----------------
-  const pressLeft = ()=>{ leftPressed=true; };
-  const releaseLeft = ()=>{ leftPressed=false; };
+  const pressLeft = (e)=>{ leftPressed=true; e.preventDefault(); };
+  const releaseLeft = (e)=>{ leftPressed=false; e.preventDefault(); };
 
-  const pressRight = ()=>{ rightPressed=true; };
-  const releaseRight = ()=>{ rightPressed=false; };
+  const pressRight = (e)=>{ rightPressed=true; e.preventDefault(); };
+  const releaseRight = (e)=>{ rightPressed=false; e.preventDefault(); };
 
   leftBtn.addEventListener("touchstart", pressLeft);
   leftBtn.addEventListener("touchend", releaseLeft);
@@ -111,7 +123,7 @@ window.addEventListener("load", ()=>{
     ctx.closePath();
   }
 
-  // ----------------- رسم المجداف -----------------
+  // ----------------- رسم المنصة -----------------
   function drawPaddle(){
     ctx.beginPath();
     ctx.rect(paddleX, canvas.height-paddleHeight, paddleWidth, paddleHeight);
@@ -120,7 +132,7 @@ window.addEventListener("load", ()=>{
     ctx.closePath();
   }
 
-  // ----------------- رسم الطوبات -----------------
+  // ----------------- رسم الطوب -----------------
   function drawBricks(){
     for(let c=0;c<brickColumnCount;c++){
       for(let r=0;r<brickRowCount;r++){
@@ -138,7 +150,7 @@ window.addEventListener("load", ()=>{
     }
   }
 
-  // ----------------- تصادم الكرة مع الطوبات -----------------
+  // ----------------- تصادم -----------------
   function collisionDetection(){
     for(let c=0;c<brickColumnCount;c++){
       for(let r=0;r<brickRowCount;r++){
@@ -146,7 +158,6 @@ window.addEventListener("load", ()=>{
         if(b.status==1){
           if(x > b.x && x < b.x+brickWidth && y > b.y && y < b.y+brickHeight){
 
-            // فيزيائية مرتدة
             dy = -dy;
 
             b.status=0;
@@ -173,7 +184,7 @@ window.addEventListener("load", ()=>{
       x += dx;
       y += dy;
 
-      // الحواف
+      // ارتداد من الحواف
       if(x + dx > canvas.width-ballRadius || x + dx < ballRadius){
         dx = -dx;
       }
@@ -182,7 +193,7 @@ window.addEventListener("load", ()=>{
         dy = -dy;
       }
       else if(y + dy > canvas.height-ballRadius){
-        // اصطدام بالمنصة (فيزيائي)
+        // ارتداد فيزيائي من المنصة
         if(x > paddleX && x < paddleX + paddleWidth){
 
           let collidePoint = x - (paddleX + paddleWidth / 2);
