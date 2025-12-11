@@ -12,42 +12,70 @@
     align-items: center;
     height: 100vh;
     background: linear-gradient(#70c5ce, #fff);
-    user-select: none; /* لمنع تحديد النص */
+    user-select: none;
     -webkit-user-select: none;
   }
-  canvas {
-    background: #70c5ce;
-    display: block;
-    border: 3px solid #000;
+
+  .flappy-container {
+    position: relative;
+    width: 100%;
+    height: 100vh; /* فول سكرين للموبايل */
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
+
+  canvas {
+    display: block;
+    width: 100%;
+    max-width: 600px; /* على الكمبيوتر */
+    height: 100%;
+    max-height: 800px;
+    border: 3px solid #000;
+    background: #70c5ce;
+  }
+
   #ui {
     position: absolute;
-    top: 20px;
-    text-align: center;
     width: 100%;
-    font-family: Arial, sans-serif;
-    color: #000;
-    pointer-events: none; /* منع التفاعل مع النص */
+    top: 0;
+    text-align: center;
+    pointer-events: none;
   }
-  button {
+
+  #ui button {
     pointer-events: auto;
-    margin: 0 5px;
-    padding: 8px 15px;
-    font-size: 16px;
-    border-radius: 8px;
+    margin: 10px;
+    padding: 12px 25px;
+    font-size: 18px;
+    border-radius: 10px;
     border: none;
     cursor: pointer;
     background: #1e90ff;
     color: #fff;
   }
+
+  #ui #scoreDisplay {
+    font-size: 22px;
+    color: #000;
+    margin-top: 15px;
+    pointer-events: none;
+  }
+
+  /* أزرار واضحة فقط على الموبايل */
+  @media(min-width:601px){
+    #ui button { display: none; }
+  }
 </style>
 </head>
 <body>
-  <canvas id="gameCanvas" width="790" height="800"></canvas>
-  <div id="ui">
-    <div id="scoreDisplay">Score: 0</div>
-    <button id="startBtn">Start</button>
-    <button id="restartBtn" style="display:none;">Restart</button>
+  <div class="flappy-container">
+    <canvas id="gameCanvas"></canvas>
+    <div id="ui">
+      <div id="scoreDisplay">Score: 0</div>
+      <button id="startBtn">Start</button>
+      <button id="restartBtn" style="display:none;">Restart</button>
+    </div>
   </div>
 
 <script>
@@ -58,54 +86,50 @@ window.addEventListener("load", () => {
   const restartBtn = document.getElementById("restartBtn");
   const scoreDisplay = document.getElementById("scoreDisplay");
 
+  // فول سكرين على الموبايل
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener("resize", resizeCanvas);
+  resizeCanvas();
+
   let gameStarted = false;
   let gameOver = false;
 
   // الطائر
-  const bird = {
-    x: 80,
-    y: canvas.height/2,
-    width: 30,
-    height: 30,
-    velocity: 0,
-    gravity: 0.6,
-    jump: -10
-  };
+  const bird = { x: 80, y: canvas.height/2, width: 30, height: 30, velocity: 0, gravity: 0.6, jump: -10 };
 
   // الأنابيب
-  const pipeWidth = 50;
-  const pipeGap = 150;
+  const pipeWidth = 50, pipeGap = 150;
   const pipes = [];
-  let pipeInterval = 90; // عدد الإطارات بين توليد أنبوب جديد
-  let frameCount = 0;
+  let pipeInterval = 90, frameCount = 0;
 
   let score = 0;
 
   // ----------------- التحكم -----------------
   const flap = () => {
-    if(!gameStarted) return;
+    if(!gameStarted || gameOver) return;
     bird.velocity = bird.jump;
   };
 
-  document.addEventListener("keydown", (e) => {
-    if(e.code === "Space") flap();
-  });
-
+  // المسطرة
+  document.addEventListener("keydown", e => { if(e.code === "Space") flap(); });
+  // الموبايل أو النقر بالماوس
   canvas.addEventListener("click", flap);
-  canvas.addEventListener("touchstart", (e) => { flap(); e.preventDefault(); });
+  canvas.addEventListener("touchstart", e => { flap(); e.preventDefault(); });
 
-  startBtn.addEventListener("click", () => {
+  startBtn.addEventListener("click", ()=>{
     gameStarted = true;
     startBtn.style.display = "none";
   });
 
-  restartBtn.addEventListener("click", () => {
+  restartBtn.addEventListener("click", ()=>{
     resetGame();
     gameStarted = true;
     restartBtn.style.display = "none";
   });
 
-  // ----------------- إعادة ضبط اللعبة -----------------
   function resetGame() {
     bird.y = canvas.height/2;
     bird.velocity = 0;
@@ -116,25 +140,20 @@ window.addEventListener("load", () => {
     frameCount = 0;
   }
 
-  // ----------------- رسم الطائر -----------------
   function drawBird() {
     ctx.fillStyle = "yellow";
     ctx.fillRect(bird.x, bird.y, bird.width, bird.height);
   }
 
-  // ----------------- رسم الأنابيب -----------------
   function drawPipes() {
     ctx.fillStyle = "green";
     for(let i=0;i<pipes.length;i++){
       let p = pipes[i];
-      // أنبوب علوي
       ctx.fillRect(p.x, 0, pipeWidth, p.top);
-      // أنبوب سفلي
       ctx.fillRect(p.x, canvas.height - p.bottom, pipeWidth, p.bottom);
     }
   }
 
-  // ----------------- التحديث -----------------
   function update() {
     if(!gameStarted || gameOver) return;
 
@@ -142,14 +161,12 @@ window.addEventListener("load", () => {
     bird.velocity += bird.gravity;
     bird.y += bird.velocity;
 
-    // توليد أنابيب جديدة
     if(frameCount % pipeInterval === 0) {
       let topHeight = Math.random() * (canvas.height - pipeGap - 100) + 50;
       let bottomHeight = canvas.height - pipeGap - topHeight;
       pipes.push({x: canvas.width, top: topHeight, bottom: bottomHeight});
     }
 
-    // تحريك الأنابيب واحتساب النقاط
     for(let i=0;i<pipes.length;i++){
       pipes[i].x -= 3;
       if(pipes[i].x + pipeWidth === bird.x) {
@@ -158,40 +175,28 @@ window.addEventListener("load", () => {
       }
     }
 
-    // إزالة الأنابيب اللي خرجت من الشاشة
-    while(pipes.length > 0 && pipes[0].x + pipeWidth < 0) {
-      pipes.shift();
-    }
+    while(pipes.length>0 && pipes[0].x + pipeWidth < 0) pipes.shift();
 
-    // تصادمات
     for(let i=0;i<pipes.length;i++){
       let p = pipes[i];
-      if(
-        bird.x < p.x + pipeWidth &&
-        bird.x + bird.width > p.x &&
-        (bird.y < p.top || bird.y + bird.height > canvas.height - p.bottom)
-      ){
-        gameOver = true;
-        restartBtn.style.display = "inline-block";
+      if(bird.x < p.x + pipeWidth && bird.x + bird.width > p.x && 
+        (bird.y < p.top || bird.y + bird.height > canvas.height - p.bottom)) {
+          gameOver = true;
+          restartBtn.style.display = "inline-block";
       }
     }
 
-    // اصطدام مع الأرض أو السقف
     if(bird.y + bird.height > canvas.height || bird.y < 0){
       gameOver = true;
       restartBtn.style.display = "inline-block";
     }
   }
 
-  // ----------------- رسم الإطار -----------------
   function draw() {
     ctx.clearRect(0,0,canvas.width,canvas.height);
-
     drawBird();
     drawPipes();
-
     update();
-
     requestAnimationFrame(draw);
   }
 
