@@ -265,7 +265,6 @@
 
             .container {
                 padding: 10px;
-                max-height: 98vh;
             }
 
             .score-board {
@@ -275,24 +274,12 @@
 
             #gameCanvas {
                 max-width: 90vw;
-                max-height: 50vh;
                 width: auto;
                 height: auto;
             }
 
-            .control-btn {
-                width: 60px;
-                height: 60px;
-                font-size: 1.3em;
-            }
-
-            .controls {
-                grid-template-columns: repeat(3, 60px);
-                margin: 15px auto 10px;
-            }
-
             .instructions {
-                font-size: 0.8em;
+                font-size: 0.85em;
                 margin-top: 10px;
             }
         }
@@ -327,15 +314,8 @@
             </div>
         </div>
 
-        <div class="controls">
-            <button class="control-btn" data-direction="up">▲</button>
-            <button class="control-btn" data-direction="right">◄</button>
-            <button class="control-btn" data-direction="left">►</button>
-            <button class="control-btn" data-direction="down">▼</button>
-        </div>
-
         <div class="instructions">
-            استخدم الأسهم أو الأزرار للتحكم
+            اسحب على الشاشة للتحكم أو استخدم الأسهم 👆
         </div>
     </div>
 
@@ -387,6 +367,18 @@
         let gameSpeed = 120;
         let lastDirection = {dx: 0, dy: 0};
         let snakeColors = [];
+
+        // متغيرات للتحكم باللمس
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchEndX = 0;
+        let touchEndY = 0;
+        const minSwipeDistance = 30; // الحد الأدنى للمسافة للسحب
+
+        // متغيرات الأنيميشن
+        let animationProgress = 0;
+        let lastMoveTime = 0;
+        let nextSegments = [];
 
         highScoreEl.textContent = highScore;
 
@@ -464,77 +456,202 @@
                 ctx.stroke();
             }
 
-            // رسم الدودة بألوان جوجل
-            snake.forEach((segment, index) => {
-                ctx.fillStyle = snakeColors[index];
+            // رسم الدودة كجسم متصل مع أنيميشن سلس
+            if (snake.length > 0) {
+                const segments = [];
                 
-                // رسم الجسم مع حواف دائرية
-                const x = segment.x * gridSize;
-                const y = segment.y * gridSize;
-                const size = gridSize - 2;
-                const radius = 8;
+                // حساب المواقع المتحركة بناءً على الأنيميشن
+                for (let i = 0; i < snake.length; i++) {
+                    let currentX = snake[i].x * gridSize + gridSize / 2;
+                    let currentY = snake[i].y * gridSize + gridSize / 2;
+                    
+                    // إذا كان هناك حركة قادمة، نحسب الموقع الانتقالي
+                    if (nextSegments.length > i) {
+                        const nextX = nextSegments[i].x * gridSize + gridSize / 2;
+                        const nextY = nextSegments[i].y * gridSize + gridSize / 2;
+                        
+                        // استخدام easing للحركة السلسة
+                        const easeProgress = easeInOutQuad(animationProgress);
+                        currentX = currentX + (nextX - currentX) * easeProgress;
+                        currentY = currentY + (nextY - currentY) * easeProgress;
+                    }
+                    
+                    segments.push({x: currentX, y: currentY});
+                }
 
+                // رسم الجسم كمنحنى سلس
+                const radius = gridSize / 2.3;
+                
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.lineWidth = radius * 2;
+
+                // رسم الجسم بتدرج لوني
+                if (segments.length > 1) {
+                    // رسم خط واحد متصل للجسم كله
+                    ctx.beginPath();
+                    ctx.moveTo(segments[0].x, segments[0].y);
+                    
+                    // استخدام منحنيات بيزير للحركة السلسة
+                    for (let i = 1; i < segments.length; i++) {
+                        if (i === segments.length - 1) {
+                            ctx.lineTo(segments[i].x, segments[i].y);
+                        } else {
+                            // نقطة التحكم للمنحنى
+                            const xc = (segments[i].x + segments[i + 1].x) / 2;
+                            const yc = (segments[i].y + segments[i + 1].y) / 2;
+                            ctx.quadraticCurveTo(segments[i].x, segments[i].y, xc, yc);
+                        }
+                    }
+                    
+                    // تدرج لوني للجسم
+                    const gradient = ctx.createLinearGradient(
+                        segments[0].x, segments[0].y,
+                        segments[segments.length - 1].x, segments[segments.length - 1].y
+                    );
+                    gradient.addColorStop(0, currentColors.blue);
+                    gradient.addColorStop(0.3, currentColors.green);
+                    gradient.addColorStop(0.6, currentColors.yellow);
+                    gradient.addColorStop(1, currentColors.red);
+                    
+                    ctx.strokeStyle = gradient;
+                    ctx.stroke();
+                }
+
+                // رسم الرأس بشكل دائري أكبر قليلاً
+                const head = segments[0];
+                const headGradient = ctx.createRadialGradient(
+                    head.x, head.y, 0,
+                    head.x, head.y, radius + 2
+                );
+                headGradient.addColorStop(0, currentColors.blue);
+                headGradient.addColorStop(0.7, currentColors.blue);
+                headGradient.addColorStop(1, 'rgba(66, 133, 244, 0.7)');
+                
+                ctx.fillStyle = headGradient;
                 ctx.beginPath();
-                ctx.moveTo(x + radius + 1, y + 1);
-                ctx.lineTo(x + size - radius, y + 1);
-                ctx.quadraticCurveTo(x + size, y + 1, x + size, y + radius + 1);
-                ctx.lineTo(x + size, y + size - radius);
-                ctx.quadraticCurveTo(x + size, y + size, x + size - radius, y + size);
-                ctx.lineTo(x + radius + 1, y + size);
-                ctx.quadraticCurveTo(x + 1, y + size, x + 1, y + size - radius);
-                ctx.lineTo(x + 1, y + radius + 1);
-                ctx.quadraticCurveTo(x + 1, y + 1, x + radius + 1, y + 1);
-                ctx.closePath();
+                ctx.arc(head.x, head.y, radius + 2, 0, Math.PI * 2);
                 ctx.fill();
 
-                // رسم العيون للرأس
-                if (index === 0) {
-                    ctx.fillStyle = 'white';
-                    const eyeSize = 5;
-                    const eyeY = y + 8;
-                    
-                    // العين اليسرى
+                // رسم العيون
+                ctx.fillStyle = 'white';
+                const eyeSize = 4;
+                
+                // تحديد موضع العيون حسب الاتجاه
+                if (dx === 1) { // يمين
                     ctx.beginPath();
-                    ctx.arc(x + 10, eyeY, eyeSize, 0, Math.PI * 2);
+                    ctx.arc(head.x + 6, head.y - 5, eyeSize, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(head.x + 6, head.y + 5, eyeSize, 0, Math.PI * 2);
                     ctx.fill();
                     
-                    // العين اليمنى
-                    ctx.beginPath();
-                    ctx.arc(x + gridSize - 11, eyeY, eyeSize, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // البؤبؤ
                     ctx.fillStyle = '#202124';
                     ctx.beginPath();
-                    ctx.arc(x + 10, eyeY, 2, 0, Math.PI * 2);
+                    ctx.arc(head.x + 7, head.y - 5, 2, 0, Math.PI * 2);
                     ctx.fill();
                     ctx.beginPath();
-                    ctx.arc(x + gridSize - 11, eyeY, 2, 0, Math.PI * 2);
+                    ctx.arc(head.x + 7, head.y + 5, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (dx === -1) { // يسار
+                    ctx.beginPath();
+                    ctx.arc(head.x - 6, head.y - 5, eyeSize, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(head.x - 6, head.y + 5, eyeSize, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = '#202124';
+                    ctx.beginPath();
+                    ctx.arc(head.x - 7, head.y - 5, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(head.x - 7, head.y + 5, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (dy === -1) { // فوق
+                    ctx.beginPath();
+                    ctx.arc(head.x - 5, head.y - 6, eyeSize, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(head.x + 5, head.y - 6, eyeSize, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = '#202124';
+                    ctx.beginPath();
+                    ctx.arc(head.x - 5, head.y - 7, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(head.x + 5, head.y - 7, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                } else { // تحت
+                    ctx.beginPath();
+                    ctx.arc(head.x - 5, head.y + 6, eyeSize, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(head.x + 5, head.y + 6, eyeSize, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = '#202124';
+                    ctx.beginPath();
+                    ctx.arc(head.x - 5, head.y + 7, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(head.x + 5, head.y + 7, 2, 0, Math.PI * 2);
                     ctx.fill();
                 }
-            });
 
-            // رسم الطعام كتفاحة حمراء
-            const fx = food.x * gridSize;
-            const fy = food.y * gridSize;
+                // رسم الذيل بشكل مدبب
+                if (segments.length > 1) {
+                    const tail = segments[segments.length - 1];
+                    const tailGradient = ctx.createRadialGradient(
+                        tail.x, tail.y, 0,
+                        tail.x, tail.y, radius * 0.7
+                    );
+                    tailGradient.addColorStop(0, currentColors.red);
+                    tailGradient.addColorStop(1, 'rgba(234, 67, 53, 0.5)');
+                    
+                    ctx.fillStyle = tailGradient;
+                    ctx.beginPath();
+                    ctx.arc(tail.x, tail.y, radius * 0.7, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // رسم الطعام كتفاحة حمراء مع أنيميشن نبض
+            const time = Date.now() / 500;
+            const pulse = Math.sin(time) * 0.1 + 1;
+            
+            const fx = food.x * gridSize + gridSize / 2;
+            const fy = food.y * gridSize + gridSize / 2;
+            
+            ctx.save();
+            ctx.translate(fx, fy);
+            ctx.scale(pulse, pulse);
             
             // التفاحة
             ctx.fillStyle = currentColors.red;
             ctx.beginPath();
-            ctx.arc(fx + gridSize/2, fy + gridSize/2, gridSize/3, 0, Math.PI * 2);
+            ctx.arc(0, 0, gridSize/3, 0, Math.PI * 2);
             ctx.fill();
 
             // الورقة الخضراء
             ctx.fillStyle = currentColors.green;
             ctx.beginPath();
-            ctx.ellipse(fx + gridSize/2 + 5, fy + gridSize/2 - 8, 4, 6, Math.PI / 4, 0, Math.PI * 2);
+            ctx.ellipse(5, -8, 4, 6, Math.PI / 4, 0, Math.PI * 2);
             ctx.fill();
 
             // النقطة البيضاء للبريق
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
             ctx.beginPath();
-            ctx.arc(fx + gridSize/2 - 3, fy + gridSize/2 - 3, 3, 0, Math.PI * 2);
+            ctx.arc(-3, -3, 3, 0, Math.PI * 2);
             ctx.fill();
+            
+            ctx.restore();
+        }
+
+        // دالة easing للحركة السلسة
+        function easeInOutQuad(t) {
+            return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
         }
 
         function moveSnake() {
@@ -554,8 +671,13 @@
                 return;
             }
 
+            // حفظ المواقع القادمة للأنيميشن
+            nextSegments = [{x: head.x, y: head.y}];
+            for (let i = 0; i < snake.length - 1; i++) {
+                nextSegments.push({x: snake[i].x, y: snake[i].y});
+            }
+
             snake.unshift(head);
-            snakeColors.unshift(getSnakeColor(0));
 
             // فحص الأكل
             if (head.x === food.x && head.y === food.y) {
@@ -564,19 +686,14 @@
                 playEatSound();
                 placeFood();
                 
+                // إضافة الجزء الأخير للدودة في nextSegments
+                nextSegments.push({x: snake[snake.length - 1].x, y: snake[snake.length - 1].y});
+                
                 if (score % 50 === 0 && gameSpeed > 60) {
                     gameSpeed -= 5;
                 }
             } else {
                 snake.pop();
-                snakeColors.pop();
-            }
-
-            // تدوير الألوان
-            if (snake.length > 4) {
-                for (let i = 0; i < snake.length; i++) {
-                    snakeColors[i] = getSnakeColor(i + Math.floor(score / 10));
-                }
             }
 
             lastDirection = {dx, dy};
@@ -614,8 +731,11 @@
             dx = 1;
             dy = 0;
             lastDirection = {dx: 1, dy: 0};
+            animationProgress = 0;
+            nextSegments = [];
+            lastMoveTime = performance.now();
             gameRunning = true;
-            gameLoop();
+            requestAnimationFrame(gameLoop);
         }
 
         function restartGame() {
@@ -627,8 +747,11 @@
             dx = 1;
             dy = 0;
             lastDirection = {dx: 1, dy: 0};
+            animationProgress = 0;
+            nextSegments = [];
+            lastMoveTime = performance.now();
             gameRunning = true;
-            gameLoop();
+            requestAnimationFrame(gameLoop);
         }
 
         function changeDirection(newDx, newDy) {
@@ -646,13 +769,23 @@
             dy = newDy;
         }
 
-        function gameLoop() {
+        function gameLoop(currentTime = 0) {
             if (!gameRunning) return;
 
-            moveSnake();
-            drawGame();
+            // حساب الوقت المنقضي
+            const deltaTime = currentTime - lastMoveTime;
 
-            setTimeout(gameLoop, gameSpeed);
+            // تحديث الأنيميشن بشكل مستمر
+            if (deltaTime >= gameSpeed) {
+                moveSnake();
+                animationProgress = 0;
+                lastMoveTime = currentTime;
+            } else {
+                animationProgress = deltaTime / gameSpeed;
+            }
+
+            drawGame();
+            requestAnimationFrame(gameLoop);
         }
 
         // التحكم بلوحة المفاتيح
@@ -684,25 +817,83 @@
             }
         });
 
-        // التحكم بالأزرار
-        document.querySelectorAll('.control-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const direction = btn.dataset.direction;
-                switch(direction) {
-                    case 'up':
-                        changeDirection(0, -1);
-                        break;
-                    case 'down':
-                        changeDirection(0, 1);
-                        break;
-                    case 'left':
-                        changeDirection(-1, 0);
-                        break;
-                    case 'right':
-                        changeDirection(1, 0);
-                        break;
+        // التحكم باللمس (الإيماءات)
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            const touch = e.changedTouches[0];
+            touchEndX = touch.clientX;
+            touchEndY = touch.clientY;
+            handleSwipe();
+        }, { passive: false });
+
+        function handleSwipe() {
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = touchEndY - touchStartY;
+            const absDeltaX = Math.abs(deltaX);
+            const absDeltaY = Math.abs(deltaY);
+
+            // تحديد إذا كانت الحركة سحب صحيح
+            if (Math.max(absDeltaX, absDeltaY) < minSwipeDistance) {
+                return; // السحب قصير جداً
+            }
+
+            // تحديد الاتجاه بناءً على أكبر حركة
+            if (absDeltaX > absDeltaY) {
+                // سحب أفقي
+                if (deltaX > 0) {
+                    // سحب لليمين
+                    changeDirection(1, 0);
+                } else {
+                    // سحب لليسار
+                    changeDirection(-1, 0);
                 }
-            });
+            } else {
+                // سحب رأسي
+                if (deltaY > 0) {
+                    // سحب للأسفل
+                    changeDirection(0, 1);
+                } else {
+                    // سحب للأعلى
+                    changeDirection(0, -1);
+                }
+            }
+        }
+
+        // التحكم بالماوس (للكمبيوتر)
+        let mouseStartX = 0;
+        let mouseStartY = 0;
+        let isMouseDown = false;
+
+        canvas.addEventListener('mousedown', (e) => {
+            isMouseDown = true;
+            mouseStartX = e.clientX;
+            mouseStartY = e.clientY;
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            if (!isMouseDown) return;
+            isMouseDown = false;
+            
+            touchEndX = e.clientX;
+            touchEndY = e.clientY;
+            touchStartX = mouseStartX;
+            touchStartY = mouseStartY;
+            handleSwipe();
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            isMouseDown = false;
         });
 
         startBtn.addEventListener('click', startGame);
